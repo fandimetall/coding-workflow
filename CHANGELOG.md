@@ -5,6 +5,26 @@ All notable changes to this skill are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.3] - 2026-10-01
+
+### Fixed — two defects found only by actually loading the skill
+
+Both were found by calling Hermes' own `_parse_skill_file` and
+`build_skills_system_prompt`, **not** by re-reading the file — which is exactly
+what § 4.12b ("never verify your own work") demands.
+
+- **`version:` said `3.0.1` while the file and the git tag were `3.0.2`.** A
+  version the loader cannot agree with is a version nobody can trust. Now `3.0.2`
+  → corrected in this release.
+- **The description wasted its 60-character budget.** Hermes truncates skill
+  descriptions to `SKILL_PROMPT_DESC_LIMIT = 60` characters in the system prompt
+  (`agent/skill_utils.py`). The old text spent all 60 on *what the skill is*
+  ("Master coding workflow — the ONE coding skill. Asks repo ..."), so the agent
+  never saw a trigger.
+  Now: **`Use for ANY coding task — write, fix, refactor, test, deb...`**
+  Compare a sibling skill that gets this right — `code-intelligence-mcp`:
+  *"Use before editing code to see blast-radius and callers."* The first 60
+  characters must answer **when to load this**, not what it is.
 ## [3.0.2] - 2026-10-01
 
 ### Added — the 5 missing `ponytail` children

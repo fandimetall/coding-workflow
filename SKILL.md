@@ -1,7 +1,7 @@
 ---
 name: coding-workflow
-description: "Master coding workflow — the ONE coding skill. Asks repo ownership, review level and delivery mode, runs the full cycle (context, analysis, TDD, execution, security scan, independent review, git, honest report), and explains each unit back so the user can catch wrong intent. Merges debugging discipline, TDD, testing strategy, pre-commit security review, anti-bloat review, planning, spikes, PR lifecycle and journaling into one self-contained file. Portable."
-version: 3.0.1
+description: "Use for ANY coding task — write, fix, refactor, test, debug, review or ship code. The ONE coding workflow: asks repo ownership, review level and delivery mode, then runs context → root cause → plan → TDD → verify → git, and explains each unit back so the user can catch wrong intent. Absorbs 16 former coding skills (plan, spike, TDD, systematic-debugging, testing-strategy, security review, ponytail + its 5 children, coding-journal, PR/issue/porting) — do NOT look for them separately. Every contradiction between them is resolved in Appendix E."
+version: 3.0.2
 author: Fandi Iswara Saputra (@fandimetall)
 license: MIT
 platforms: [linux, macos, windows]
