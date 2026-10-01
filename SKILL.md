@@ -1,7 +1,7 @@
 ---
 name: coding-workflow
 description: "Master coding workflow — the ONE coding skill. Asks repo ownership, review level and delivery mode, runs the full cycle (context, analysis, TDD, execution, security scan, independent review, git, honest report), and explains each unit back so the user can catch wrong intent. Merges debugging discipline, TDD, testing strategy, pre-commit security review, anti-bloat review, planning, spikes, PR lifecycle and journaling into one self-contained file. Portable."
-version: 3.0.0
+version: 3.0.1
 author: Fandi Iswara Saputra (@fandimetall)
 license: MIT
 platforms: [linux, macos, windows]
@@ -885,6 +885,36 @@ Report exactly what happened, in this shape:
 
 **Red is red. Skipped is skipped. Unknown is unknown.**
 A silent skip is the failure this entire protocol exists to prevent.
+
+### 6.1b — Numbers: measure, do not remember. And do not panic at the first reading.
+
+**Every number you report must come from a command you ran in this session.**
+A remembered figure is a guess wearing a suit. Say *"I did not measure this"*
+instead.
+
+**Three traps, all seen in real sessions — check yourself against them:**
+
+**1. Bytes are not characters.** A file that is 58,027 *characters* can be 58,687
+*bytes*: the difference is multi-byte UTF-8 (`—`, `✅`, `·`). Reporting those two
+numbers as if they contradicted each other starts a phantom incident. **When a
+size surprises you, ask which unit you measured before you ask what changed.**
+
+**2. "Something rewrote my file!" — check the clock first.** A size that differs
+between two checks is far more often *two different measurements* than tampering.
+Compare: unit (byte/char), scope (file vs folder), and mtime. **A suspicion of
+tampering is a claim; verify it before you say it out loud.**
+
+**3. Measure the right scope.** Summing sizes while walking a tree with the
+accumulator inside the loop counts *a folder* and reports it as *a file*. State
+what you measured: **the file, or the folder including `.git`?**
+
+> **Rule:** when a check says something alarming, **re-check the check before you
+> report the alarm.** You are allowed to be surprised; you are not allowed to
+> report a surprise as a fact.
+
+This is the same discipline as § 1.2, one level up: **a measurement you have not
+verified has proven nothing** — including a measurement that says something is
+wrong.
 
 ### 6.2 — Explain every unit back
 

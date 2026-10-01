@@ -5,6 +5,31 @@ All notable changes to this skill are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.1] - 2026-10-01
+
+### Added
+
+- **§ 6.1b — Numbers: measure, do not remember.** Every reported figure must come
+  from a command run *in this session*; a remembered number is a guess.
+
+  Three traps, all taken from real mistakes made while building this very file:
+
+  1. **Bytes are not characters.** 58,027 characters is 58,687 bytes — the gap is
+     multi-byte UTF-8 (`—`, `✅`, `·`). Reporting those two as a contradiction
+     creates a phantom incident. *Ask which unit you measured before asking what
+     changed.*
+  2. **"Something rewrote my file!" — check the clock first.** A size that differs
+     between two checks is nearly always two *different measurements*, not
+     tampering. Compare unit, scope, and mtime before making an accusation.
+  3. **Measure the right scope.** A size accumulator inside a tree-walk counts *a
+     folder* while you believe you are reporting *a file*. Say whether you measured
+     the file or the folder including `.git`.
+
+  > When a check says something alarming, **re-check the check before reporting the
+  > alarm.** You may be surprised; you may not report a surprise as a fact.
+
+---
+
 ## [3.0.0] - 2026-10-01
 
 ### BREAKING
