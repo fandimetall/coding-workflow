@@ -5,7 +5,7 @@ All notable changes to this skill are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.6.0] - 2026-10-02
+## [2.6.0] - 2026-10-01
 
 ### Added
 
@@ -48,7 +48,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   `filter.py:34`"* is not compact — it is withheld. The rule is now explicit:
   **meaning first, then the changed code, then a pointer for the rest.**
 
-## [2.5.0] - 2026-10-02
+## [2.5.0] - 2026-10-01
 
 ### Added
 
@@ -85,7 +85,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Guiding rule added to the learning layer: **annotate, do not obfuscate** — never
   simplify the code for teaching and then ship the simplified version.
 
-## [2.4.0] - 2026-10-02
+## [2.4.0] - 2026-10-01
 
 ### Added
 
@@ -121,7 +121,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   explanation is enough"*, *"showing the code invites nitpicks"*.
 - Quick Reference: the PRA row now asks for **ownership + review level**.
 
-## [2.3.0] - 2026-10-02
+## [2.3.0] - 2026-10-01
 
 ### Added
 
@@ -150,7 +150,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Explanation depth scales with the PRA-PHASE 0.1 answer: short form for a personal
   repo, short form **plus why-this-way and the trade-off** for a team repo.
 
-## [2.2.0] - 2026-10-02
+## [2.2.0] - 2026-10-01
 
 ### Added
 
@@ -175,7 +175,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   for tasks >1 hour or >3 files.
 - Quick Reference updated: the PRA row now starts with *"ask repo ownership"*.
 
-## [2.1.0] - 2026-10-02
+## [2.1.0] - 2026-10-01
 
 ### Added
 
@@ -212,7 +212,7 @@ Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   the real environment **and can be undone**"*.
 - `description` frontmatter extended with the version-control discipline keywords.
 
-## [2.0.0] - 2026-10-02
+## [2.0.0] - 2026-10-01
 
 ### Changed
 
