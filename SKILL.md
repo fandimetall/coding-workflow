@@ -1,34 +1,63 @@
 ---
 name: coding-workflow
-description: "Master coding workflow: ask repo ownership, review level (expert/learning/plain) and delivery mode (inline/pointer), run 6 phases, then explain each unit — pasting the changed lines and pointing at the rest — so the user can catch wrong intent, inefficient code, unexplained code. Portable."
-version: 2.6.0
+description: "Master coding workflow — the ONE coding skill. Asks repo ownership, review level and delivery mode, runs the full cycle (context, analysis, TDD, execution, security scan, independent review, git, honest report), and explains each unit back so the user can catch wrong intent. Merges debugging discipline, TDD, testing strategy, pre-commit security review, anti-bloat review, planning, spikes, PR lifecycle and journaling into one self-contained file. Portable."
+version: 3.0.0
 author: Fandi Iswara Saputra (@fandimetall)
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
   hermes:
-    tags: [coding, workflow, testing, tdd, qa, debugging, code-review, quality-gate, portable]
+    tags: [coding, workflow, testing, tdd, qa, debugging, code-review, quality-gate, security, anti-bloat, planning, portable]
     related_skills: []
 ---
 
-# Coding Workflow — Master Protocol
+# Coding Workflow — Master Protocol (v3.0, unified)
 
-> **One file, no dependencies.** This skill is fully self-contained: the debugging,
-> testing, QA, and review discipline you need is embedded below — not referenced
-> out to other skills you may not have installed.
+> **One file, no dependencies.** This is the **only** coding-process skill you need.
+> Debugging, testing, QA, security review, anti-bloat review, planning, spikes, PR
+> lifecycle and journaling all live **inside this file** — nothing is deferred to a
+> sibling skill you may not have installed.
 >
-> If you *do* have richer dedicated skills (e.g. a full QA harness), use them. This
-> file is the floor, not the ceiling.
+> v3.0 **absorbs** what used to be separate skills (`plan`, `spike`, `systematic-
+> debugging`, `test-driven-development`, `testing-strategy`, `requesting-code-review`,
+> `simplify-code`, `ponytail*`, `coding-journal`, `brief-ku`, `github-pr-workflow`,
+> `github-issue-to-pr`, `git-patch-porting`, `merge-reconciler`, `agent-skills-
+> addyosmani`, `ecc-agent-harness`). Those are gone on purpose: **one source of
+> truth, so no two skills can contradict each other.**
 
 **MUST run on EVERY coding / problem-solving task, without being asked.**
 
 ---
 
-## When to Use
+## ⛔ THE LOCK — read this before anything else
 
-Load at the START of every coding task: fixing bugs, adding features, refactoring,
-debugging, reviewing. Also load when the user says *"fix this"*, *"add a feature"*,
-*"why is this erroring"*, or any programming request.
+Three rules outrank every other rule in this file. They exist because the
+absorbed skills contradicted each other, and one of them contradicted the
+user's own priority.
+
+**1. EFFECTIVE & EFFICIENT > MINIMUM. Short code is NOT the goal.**
+
+This file contains a full anti-bloat toolkit (§ 4.10). It is a **tool, not a
+target.**
+
+- The goal is code that **hits the target, saves resources, and is safe** —
+  not code that is fewest lines.
+- When shorter means **more fragile, harder to read, or harder to maintain**,
+  **the longer version is the correct one.** Take it, and say why.
+- Be proud that it works and is safe. Never be proud that it is short.
+- A `ponytail:`-style "one line!" instinct is a **hint to check**, never an
+  instruction to obey. If the one-liner is unreadable, **reject it.**
+
+**2. ONE SKILL, ONE PROCESS.** The cycle below is the whole process. Do not
+import a second coding process on top of it. If another skill seems to command
+a different order (e.g. "plan only, never implement", "throw the code away"),
+that skill is **a phase of this one**, not a competing authority — follow the
+phase boundaries here.
+
+**3. THE USER'S EXPLICIT INSTRUCTION OUTRANKS EVERYTHING**, including this
+file. If the user says "just do it, skip the ceremony", you skip it — **out
+loud**, naming what you skipped (`§ RULES`: silent skipping is the failure this
+protocol exists to prevent).
 
 ---
 
@@ -52,160 +81,207 @@ Map them to whatever you have:
 
 ---
 
-## PRA-PHASE — Before Writing Code (mandatory questions + when the task is unclear)
+## PRA-PHASE — Before Writing Code
+
+The pre-phase answers **five** questions, in order. Each one changes how
+strictly every later phase runs. Skipping them means the whole workflow runs
+at a guessed strictness — which is worse than no workflow.
+
+| # | Question | Where it came from |
+|---|---|---|
+| 0.0 | Is this a **vague app idea** that needs a spec first? | `brief-ku` |
+| 0.1 | Who does this repo **belong to**? | original |
+| 0.1b | What **review level** does the user want? | original |
+| 0.1c | How should the code be **delivered**? | original |
+| 0.2 | Is the task **clear and low-risk** — or does it need a **spike** or a **plan**? | `spike`, `plan` |
+
+### 0.0 — Is this a vague app idea? Build the spec first (from `brief-ku`)
+
+If the user describes an **application idea** — even one sentence, e.g. *"buatkan
+saya aplikasi absensi"* — do **not** start coding. Turn the idea into a spec first.
+
+**Five stages:**
+
+1. **Understand** the idea — restate it back in one sentence and confirm.
+2. **Clarify** — 4–7 questions **max** per round, using the `clarify` tool, never
+   plain text. Ask only what is business-critical; use sensible defaults for the rest.
+3. **Recommend** architecture and stack (§ stack table below).
+4. **Generate** the spec: PRD + technical spec.
+5. **Prepare** an implementation-ready plan (then continue to § 0.2).
+
+**Two mandatory first questions:**
+
+| # | Question | Default if unanswered |
+|---|---|---|
+| 1 | **Scope** — full functional, or UI prototype only? | full functional |
+| 2 | **Platform** — web, or mobile? | web |
+
+**Rules:**
+
+- **Never silently invent business-critical requirements.** If you assumed
+  something, write the assumption down where the user can see it.
+- **Never bury a non-technical user in jargon.**
+- **Prefer the simplest architecture that satisfies the requirement.** No
+  microservices for a CRUD app. No queue for a synchronous job. (This is the
+  *effective & efficient* rule of § THE LOCK, applied at design time.)
+
+**Default stack — recommendations only, never imposed:**
+
+| Use case | Stack |
+|---|---|
+| Modern web / SaaS | Next.js + TypeScript + PostgreSQL + Prisma + Tailwind |
+| Shared hosting / cPanel | PHP + MySQL, or plain static + a small API |
+| Static SPA (portfolio, tool) | Vite + vanilla/TS → static build, **no server** |
+| Desktop | pywebview / Tauri, or Electron if the team already lives in Node |
+
+**Done when:** you can write the requirement in one sentence the user agrees
+with, and you know the platform.
+
+---
 
 ### 0.1 — Ask this FIRST, every time: who does this repo belong to?
 
 **Before any coding starts, establish the ownership context.** You cannot pick the
 right level of ceremony without it, and guessing wrong costs either wasted hours
-(solo work treated like a team) or broken colleagues (team work treated like solo).
+(too much process on a scratch script) or an incident (too little on a shared repo).
 
-**Ask the user directly — do not assume from the task size:**
+Ask, in one short question:
 
-> *"Is this a personal repo or a shared/team repo? Will anyone else read, clone,
-> or depend on this code?"*
+> *"Is this a repo just for you, or is it shared with a team / other people?"*
 
-If the user's answer is genuinely unguessable and they are unavailable, **state your
-assumption out loud and pick the stricter mode**. Never leave it silent.
-
-| If the answer is… | Then for the rest of this workflow |
+| Answer | Strictness |
 |---|---|
-| **Personal / solo repo** | Blast radius is mostly you. Self-review is acceptable. Commit to `main` is fine. Light ceremony. |
-| **Team / shared / public repo** | **Blast radius is mandatory** (PHASE 0.3) — other people's code calls yours. **Review must be independent** (PHASE 4.12b). **Always branch** (PHASE 5.2). Never rewrite shared history. |
-| **Unknown / will be shared later** | **Treat as team.** The cost of extra caution is minutes; the cost of a broken shared history is an incident. |
+| **Solo / throwaway** | Lighter ceremony: no branch required, self-review allowed if you say so — but **root cause, tests and honest reporting still apply.** |
+| **Team / shared / public** | Full ceremony: branch, atomic commits, **independent** review, no shared-history rewrite. |
+
+**When you cannot tell, treat it as a TEAM repo.** The cost of extra care on a
+solo repo is minutes; the cost of too little care on a shared one is an incident.
+
+**Do not guess from the size of the task.** A one-line change to a shared repo
+still deserves the team track; a 500-line change to a scratch file does not.
+
+---
 
 ### 0.1b — Ask second: what review level does the user want?
 
-**Repo ownership (0.1) is about the code. This question (0.1b) is about the
-reviewer.** They are different things and you need both — a solo repo can still have
-an expert owner who wants to read every line, and a team repo can have a non-technical
-product owner who only wants to know what changed.
+Ask **two** things — they are independent (PHASE 3.8.1 explains how to use the answer):
 
-**⭐ There are TWO separate questions here — do not collapse them into one:**
+1. **Can they judge code?** (expert / can read some / cannot read code)
+2. **Do they *want* to understand it?** (yes, explain it / no, just make it work)
 
-```
-Question A: CAN they judge the code?     → who reviews it
-Question B: Do they WANT to understand it? → is this a teaching opportunity?
-```
-
-These are **independent**. A beginner who wants to learn is **neither** an expert
-**nor** a plain reader — and treating them as plain actively prevents them from ever
-becoming an expert. **Ask both.**
-
-**Ask the user directly:**
-
-> *"Two things, so I pitch this right: (1) do you read code yourself, or would you
-> rather I just describe what it does? (2) do you want to understand how the code
-> works as we go — even if you're not reading it fluently yet?"*
-
-| Can judge? | Wants to learn? | **Mode** | What you deliver per unit |
+| Can read code | Wants to learn | Mode | Presentation |
 |---|---|---|---|
-| Yes | — | **Expert** | Plain walkthrough + **the code** + technical self-critique (PHASE 3.8.1b) |
-| No, **but wants to learn** | Yes | **⭐ Learning** | Plain walkthrough + **annotated code** + the concept behind it + what to study + an open invitation to ask (PHASE 3.8.1c) |
-| No | No | **Plain** | Plain walkthrough only (PHASE 3.8.1) |
-| Not stated, cannot be asked | — | **Default to Expert**, leading with the plain explanation | Both |
+| yes | — | **Expert** | Full diff, technical decisions, trade-offs, where you are least confident |
+| partly / no | yes | **Learning** | Annotated real code, one concept at a time, open invitation to ask |
+| no | no | **Plain** | Meaning-first: what it does, why, what changed, one thing to try |
 
-**Detect from behaviour too** — but **never override an explicit answer**:
-- Signals for **Expert**: uses terms like *refactor, complexity, query, async, type,
-  regex*; asks *"how did you implement it?"*; corrects your technical choice.
-- Signals for **Learning**: asks *"what does this line do?"*, *"why did you write it
-  that way?"*, *"I'm still learning"*, or reads the code you show without judging it.
-- Signals for **Plain**: asks only about outcomes, never opens files, says *"I don't
-  do code"* **and** declines when offered an explanation.
-- **Genuinely unclear** → deliver both; the extra paragraph is cheap, a wrong level is
-  not. Then ask once, and remember the answer for the rest of the session.
+**Never hide the code from someone able to judge it.** **Never dump code on
+someone who cannot read it.** **Never lock a willing learner out of the
+code** — "cannot read code" and "does not want to learn" are not the same thing,
+and treating a willing learner as a plain reader is the one presentation choice
+that leaves the user *worse off* for having worked with you.
 
-> **🚩 Do not confuse "cannot read code" with "does not want to learn."**
-> Sending a willing learner to Plain mode locks them out of ever reaching Expert mode.
-> It is the one presentation choice that makes the user *worse off* for having worked
-> with you. **When a user cannot read code, always offer the learning option — never
-> silently assume they don't care.**
-
-**Why this must be asked at the start, not guessed at the end:** presentation level
-changes *what evidence you collect while working*. If the user is an Expert reviewer,
-you should be keeping the diff readable, naming your trade-offs as you go, and
-noticing where your own implementation is weak — all things easier to do **during**
-the work than to reconstruct afterwards. A Learner needs the same discipline, plus
-the *reasoning* kept alongside the code as you write it.
-
-> **This is not about flattering the user.** An Expert reviewer is the single best
-> chance to catch *suboptimal* code — dead-simple-but-slow, N+1 queries, a needless
-> abstraction. A Plain reviewer is the best chance to catch *wrong-intent* code.
-> A Learner is the best chance to catch *unexplained* code — the kind that no future
-> maintainer will understand either. **All three reviews are valuable. None
-> substitutes for another.**
+---
 
 ### 0.1c — Ask third: how should the code be *delivered*?
 
-**Review level (0.1b) answers *how deep*. This answers *how it reaches the user*.**
-They are separate: an Expert who reads code fluently may still prefer a compact
-pointer over a wall of pasted source, and the same Expert working on a 400-line file
-may want the changed lines pasted but not the rest.
-
-**Ask the user directly:**
-
-> *"(Only matters if you read code.) When I show changes, do you want the code
-> pasted in the chat, or a pointer to the file and line — `lib/filter.py:34-40` —
-> so the chat stays short? The file is always the source of truth either way."*
-
-| They choose… | **Delivery mode** | What every unit shows |
+| Delivery mode | What the user gets | Use when |
 |---|---|---|
-| Paste it here | **Inline** | The changed code, in the reply |
-| Point me at the file | **Pointer** *(default)* | The changed lines **+** `path/to/file.py:34-40` **+** a one-line anchor |
-| Not stated, cannot be asked | **Hybrid** — paste the changed region, point at the rest | Both — this is the safe default |
+| **pointer** *(default)* | **Changed lines pasted** + a pointer like `lib/services/filter.py:34-40` for the unchanged context | Almost always — compact yet reviewable |
+| **inline** | The full changed code in the reply | Small change, or the user asked for it |
+| **hybrid** | Summary + pasted key hunks + pointers for the rest | Large change where a few hunks matter most |
 
-**⭐ The pointer rule — the changed region is ALWAYS pasted:**
+**The lines that CHANGED are always pasted.** Only **unchanged context** becomes a
+pointer. A pointer with nothing pasted is **not** a compact review — it is a
+withheld one. **Meaning first, then the changed code, then a pointer for the rest.**
+
+---
+
+### 0.2 — Then: is the task clear and low-risk? (absorbs `spike` + `plan`)
+
+If **it is not clear what to build**, or **the approach is risky**, do NOT start coding.
+
+#### 0.2a — SPIKE (from `spike`) — when the answer is only findable by building
+
+A spike is a **throwaway experiment** whose output is **knowledge, not
+production code**. Use it when the user says *"let me try this"*, *"I want to
+see if X works"*, *"is this even possible?"*, *"compare A vs B"*, or when a real
+unknown (performance, cost, a third-party API's actual behaviour) blocks design.
+
+**Do NOT spike when:** the answer is knowable from docs or by reading code
+(*just research*), the work is on the production path (*plan it instead*), or
+the idea is already validated (*just implement*).
+
+**The loop:**
 
 ```
-✅  lib/services/filter.py:34-40   —  the changed lines, pasted into the chat
-    ...unchanged lines 12-33 and 41-88 → pointer only, do not paste
+decompose  →  research  →  build  →  verdict
+   ↑______________________________________↓
+              iterate on findings
 ```
 
-Pointer mode **never** means *"go read the file yourself."* It means: **the lines
-that changed stay in the chat; the lines that did not, become a pointer.** A pointer
-with no pasted change is not a compact review — it is a withheld one, and it is the
-exact behaviour rule 6 exists to prevent.
+1. **Decompose** the idea into **2–5 independent feasibility questions** — one
+   spike per question, each framed *Given / When / Then*, each with a risk label.
+2. **Research** what is already known before building anything.
+3. **Build** the smallest thing that answers the question. Keep it disposable.
+4. **Verdict** — write the answer in one line per spike: *proven / disproven /
+   still unknown*, and the evidence.
 
-**Format for every pointer (all three parts are mandatory):**
-1. **Full path from the repo root** — `lib/services/filter.py:34-40`, not `filter.py`
-2. **Line number or range** — a pointer without a line number is not a pointer
-3. **A one-line anchor** — quote the changed line so the user can confirm they are
-   looking at the right thing: *"— line 34 is `if joint in injured_joints:`"*
+**Spike rules (this is where the old rule contradicted the file, so it is now explicit):**
 
-> **Why a pointer and not a paste, when the code is unchanged:** pasting 200 lines
-> where 6 changed drowns the 6. **Signal-to-noise is the point of a review.** A
-> compact message that is actually read beats a complete one that is skimmed — and
-> the file on disk is never out of date, while chat scrollback always is.
+- A spike's code is **not deliverable**. After the verdict, **do not leave it
+  silently in the repo** — either delete it and start clean with TDD, or, if the
+  user wants to keep it, **say so explicitly and mark it** so it cannot be
+  mistaken for production code.
+- **Never declare "it works" after one happy-path run.** Test the edges, follow
+  the surprising result, and report the verdict honestly.
+- **Answer honesty:** `unknown` is a valid verdict. Do not upgrade it to
+  `proven` because you ran out of patience.
 
-> **Why the pointer must never replace the explanation:** *"done, see
-> `filter.py:34`"* is not a compact review, it is an evasion — the same excuse the
-> anti-pattern table rejects. **Meaning first, then the changed code, then a pointer
-> for the rest.** In that order, always.
+#### 0.2b — PLAN (from `plan`) — when the task needs agreement before code
 
-**Why this is asked here and not in PHASE 5:** the answer changes decisions made
-*long before* git enters the picture — how hard you check the blast radius, whether
-you may review your own work, whether you need a plan doc. Discovering "oh, this is
-a team repo" at commit time means the previous four phases were run at the wrong
-strictness. **Establish it at the start.** PHASE 5.1 re-reads this answer to pick
-the versioning mode.
+Write a markdown plan and **execute nothing** in that turn. Required for tasks
+**> 1 hour or > 3 files**, and **always for team repos**.
 
-### 0.2 — Then: is the task clear and low-risk?
+Save it under:
 
-If **it is not clear what to build**, or **the approach is risky**, do NOT start coding:
+```
+.hermes/plans/YYYY-MM-DD_HHMMSS-<slug>.md
+```
 
-- **Spike** — a throwaway experiment to prove an idea can work (e.g. *"does this
-  model fit in 6 GB VRAM?"*). The output of a spike is *knowledge*, **not** production
-  code. After the spike: **delete the code**, start clean with TDD.
-- **Plan first** — write a markdown plan and **execute nothing**. Required for tasks
-  >1 hour or >3 files, **and always for team repos**. Save it under `.hermes/plans/`
-  (or `docs/plans/`) as `YYYY-MM-DD-slug.md`. Include: goal, assumptions, approach,
-  steps, files touched, tests, risks, open questions.
-- **Ask the user** — when the *goal itself* is vague. Do not guess and then build the
-  wrong thing.
+(relative to the active working directory — Hermes file tools are backend-aware,
+so this keeps the plan with the workspace on local, docker, ssh and cloud
+backends). If the runtime names a specific path, use that exact path.
+
+**A plan is a PHASE of this workflow, not an alternative to it.** The moment the
+user says *"now implement it"*, this workflow resumes at PHASE 0 — the plan does
+**not** lock the session into "never write code".
+
+**Write the plan assuming the implementer has zero context** and questionable
+taste. Document everything they need: which files to touch, the code, the test
+commands, docs to check, how to verify.
+
+**Bite-sized tasks:** each task = **2–5 minutes of focused work**, one action each.
+*"Write the failing test"* = one step. *"Run it and watch it fail"* = the next.
+
+**Too big:** `### Task 1: Build authentication system` (50 lines, 5 files)
+**Right size:** `### Task 1: Create User model with email field` (10 lines, 1 file)
+
+**Plan structure:** Goal · current context / assumptions · proposed approach ·
+step-by-step tasks · files likely to change · tests / validation · risks,
+trade-offs and open questions.
+
+**Behaviour while planning:** if the request is clear enough, write the plan
+directly; if it is genuinely underspecified, ask **one** brief question instead
+of guessing; after saving, reply briefly with what you planned and the path.
+
+#### 0.2c — ASK THE USER — when the *goal itself* is vague
+
+Do not guess and then build the wrong thing.
 
 **Signs you need the pre-phase:** you cannot write one sentence of the form
-*"done means ..."*; or 2+ approaches look equally reasonable; or there is external
-uncertainty (performance, cost, a third-party API).
+*"done means ..."*; or 2+ approaches look equally reasonable; or there is
+external uncertainty (performance, cost, a third-party API).
 
 > **Anti-pattern:** starting work, then asking about repo ownership only when you
 > reach the commit step. By then the analysis depth, review requirement, and branch
@@ -215,763 +291,905 @@ uncertainty (performance, cost, a third-party API).
 
 ## PHASE 0 — Load Context (mandatory, in order)
 
-1. **Scan for relevant skills.** In Hermes: `skills_list()` then `skill_view()`.
-   Everywhere else: list your rules/skills directory. Load what matches the task —
-   not only when you are already writing tests.
+Load these **before** you touch code, in this order. Say out loud which ones you
+skipped and why.
 
-   Worth loading if you have them: a testing-strategy skill, a QA/exploratory-testing
-   skill, a TDD skill, a systematic-debugging skill. **If you do not have them, this
-   file already contains their essence** (see PHASE 1, PHASE 3 step 8, PHASE 4 step 12).
+1. **The user's instruction** — re-read it. Restate the goal in one sentence.
+2. **`SOUL.md` / project rules** — identity, standing rules, house style.
+3. **Relevant skill(s)** — `skills_list()` → `skill_view('<name>')` for anything
+   touching this task's tools or domain.
+4. **The code you are about to change** — read it *whole*, not just the diff
+   context. Read the callers and the tests too.
+5. **The project's own conventions** — lint config, test command, commit style.
+   Follow them; do not invent parallel ones.
 
-2. **Coding journal** — search `.hermes/coding_journal.md` (or `NOTES.md`) for a
-   similar past problem. Found one → adapt the known solution first.
-   **No file yet → create it now.** This is the single cheapest defense against
-   re-solving the same bug twice. Format is in Appendix A.
+**Optional but strongly recommended when available:**
 
-3. **Blast radius** — before touching code, find out who calls it.
-   **Priority depends on the PRA-PHASE 0.1 answer:** in a **team/public repo this is
-   mandatory and thorough** (other people's code depends on yours); in a personal
-   repo it is a quick sanity check.
-   Hermes: `codegraph explore <feature>` / `callers` / `impact`.
-   Elsewhere: IDE "find references", or `grep -rn "function_name" .`.
-   Project not indexed and no grep target → write *"blast radius: manual review"*
-   and move on. Do not silently skip this.
+- **`codegraph` / IDE call hierarchy** — before editing a shared function, look at
+  its **blast radius**: who calls it, what it returns to, what breaks if the
+  signature or behaviour changes. When no codegraph is available, `grep -rn "<fn>" .`
+  is a perfectly good substitute — **do it**.
+- **Context7 / official docs** — never edit third-party API usage from memory.
+
+> **Anti-pattern:** loading the file, reading three lines around the cursor, and
+> "fixing" it. You will break the caller you never looked at.
 
 ---
 
-## PHASE 1 — Analysis
+## PHASE 1 — Analysis & Root Cause (absorbs `systematic-debugging`)
 
-4. Break the task down: hypothesis, architecture, execution steps.
+### 1.1 — The Iron Law — true for features, mandatory for bugs
 
-   **For bugs — this is non-negotiable:**
+```
+NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST
+```
 
-   > ### The Iron Law
-   > **NO FIXES WITHOUT ROOT CAUSE INVESTIGATION FIRST.**
-   >
-   > Symptom fixes are failure. A patch that makes the error disappear without you
-   > being able to say *why it appeared* is not a fix — it is a delay.
+If the task is a **bug, a failure, or unexpected behaviour**, you may **not**
+propose a fix before completing this phase. Symptom fixes are failure — they
+return as the same bug, later, wearing a different hat.
 
-   **Write down, in one sentence, *why this is happening*.** If you cannot, you are
-   not allowed to fix it yet. Go gather evidence.
+Use this phase for **any** technical issue: test failures, production bugs,
+unexpected behaviour, performance problems, build failures, integration issues.
 
-   **Build a tight feedback loop** — this *is* the debugging work:
-   - One command that goes **red** on the user's exact symptom, and **green** when fixed.
-   - Fast, deterministic, runnable by you without a human.
-   - Asserts *this* symptom — not merely "doesn't crash".
+**Use it ESPECIALLY when:** the fix "seems obvious"; you are under time
+pressure; you have already tried one or more fixes; the previous fix did not
+work; or you do not fully understand the issue.
 
-   Ways to build one, roughly in order of preference:
-   1. A failing test at the seam that reaches the bug (unit / integration / e2e).
-   2. A `curl`/HTTP script against a running dev server.
-   3. A CLI invocation with fixture input, diffing stdout/stderr.
-   4. A headless browser script (Playwright/Puppeteer) asserting on DOM/console/network.
-   5. Replaying a captured trace (HAR, payload, event log, webhook body).
-   6. A throwaway harness that boots the smallest useful slice.
-   7. A property/fuzz loop, when the bug is intermittent wrong output.
-   8. A bisection harness (`git bisect run`) when it broke between two known states.
-   9. A differential loop: old vs new, two configs, two providers.
-   10. A human-in-the-loop script — **last resort**; script the human's steps.
+**Do not skip it because:** the issue seems simple (simple bugs have root
+causes too), you are in a hurry (rushing guarantees rework), or someone wants it
+fixed **now** (systematic is *faster* than thrashing).
 
-   **Then tighten it:** faster (cache setup, narrow scope), sharper signal (assert the
-   exact symptom), more deterministic (pin time, seed randomness, freeze network).
-   For flaky bugs your immediate goal is a **higher reproduction rate**, not
-   perfection. 50% flake = debuggable. 1% flake = usually not.
+### 1.2 — The Feedback Loop Rule (the strongest idea absorbed into v3.0)
 
-   **Gather evidence across component boundaries.** When the system has layers
-   (UI → API → service → DB, CI → build → deploy), instrument the boundary: log what
-   enters, log what exits, verify config propagation. Run once to see *where* it
-   breaks — then investigate that component only.
+> **The feedback loop is the debugging work.**
 
-   **Trace data flow upstream.** Where did the bad value originate? Who called this
-   function with it? Keep going up until you find the source. **Fix at the source.**
+Before you read code to build a theory, **create or identify a tight command
+that goes RED on the user's exact symptom and GREEN when the bug is fixed.**
 
-   **Check recent changes:** `git log --oneline -10`, `git diff`.
+A **tight** loop is:
 
-   **Phase 1 done when:** you can state the root cause as a testable sentence, and
-   your loop is red-capable. Otherwise — do not proceed.
+- **fast** — seconds, so you can run it dozens of times;
+- **deterministic** — same result every run (for flaky bugs: raise the repetition
+  count until it is reliable, or force the race with a sleep/hook);
+- **agent-runnable** — one command, no hand-holding;
+- **specific** — it fails on **this** bug, not merely "doesn't crash".
+
+**If a clean reproduction is hard, spend disproportionate effort building the
+loop.** Guessing without a red-capable loop is exactly the failure mode this
+whole phase exists to prevent.
+
+**Report the loop to the user before using it:** the command, and the observed
+RED output. A loop that has not been seen to fail has proven nothing.
+
+### 1.3 — Root Cause Investigation (do these, in order)
+
+1. **Read the error messages carefully.** Do not skip warnings — they often
+   contain the answer. Read the stack trace **completely**: line numbers, file
+   paths, error codes. `search_files` for the error string in the codebase.
+2. **Build the tight feedback loop** (§ 1.2) and watch it fail.
+3. **Trace the data.** Where does the wrong value *enter*, and where does it
+   first *become* wrong? Fix the **origin**, not the last place it looked wrong.
+4. **Check recent changes.** `git log`, `git diff`, a dependency bump, a config
+   change. Most regressions have a commit attached.
+5. **Compare a working case to the broken one.** What is different? Diff the two
+   paths explicitly rather than reasoning in the abstract.
+6. **State the root cause in one sentence, and name the evidence.** If you cannot,
+   you have not finished — go back to step 1.
+
+**Only then** propose a fix. The fix must address the **stated root cause**, and
+you must be able to explain **why the fix works**, not merely that the symptom
+went away.
+
+### 1.4 — The Rule of Three (when a fix does not work)
+
+| Attempt | What to do |
+|---|---|
+| 1st fix fails | Re-read the error. Re-run the loop. Adjust the **theory**, not the code. |
+| 2nd fix fails | **Stop.** You are guessing. Go back to § 1.3 step 1 with fresh eyes. |
+| 3rd fix fails | **Stop and escalate.** Report honestly: what you tried, what you observed, what you still do not know. Ask for help or more context. |
+
+Thrashing past three attempts is the clearest signal that the root cause was
+never found. **Say so** — an honest "I have not found the root cause" is worth
+more than a fourth guess.
+
+### 1.5 — Analysis of a non-bug task (feature / refactor / change)
+
+When the task is **not** a bug, Phase 1 still applies — it just answers
+different questions:
+
+1. **What exactly is being asked?** Restate it; confirm the *"done means ..."*
+   sentence exists. If it does not, go back to § 0.2c and ask.
+2. **What is the current behaviour, and what is the target behaviour?** Both, in
+   concrete terms (input → expected output).
+3. **What is the blast radius?** Who calls this, what depends on it, what else
+   could break? (Use codegraph / grep.)
+4. **What are the constraints?** Performance, compatibility, dependencies,
+   existing conventions, the user's stack.
+5. **What are the options, and which one is *effective & efficient*?** Name at
+   least the alternative you rejected and why. (§ THE LOCK rule 1.)
+6. **What could go wrong?** Failure modes, edge cases, the input nobody tested.
+
+**Do not proceed to Phase 3 with a question you could have answered by reading
+the code.** And **do not** turn analysis into an excuse for delay — the goal is
+understanding, not a longer document.
 
 ---
 
 ## PHASE 2 — Reference (only if an external library/API is involved)
 
-5. Look up the **current** API. Never write an API signature from memory — that is
-   how you get hallucinated parameters and phantom methods.
-   - Hermes: Context7 MCP (`resolve-library-id` + `query-docs`).
-   - Elsewhere: fetch the official docs, or read the installed package source.
+Skip this phase **only when no third-party library or API is involved** — and
+**say that out loud** when you skip it.
 
-   **Read the reference implementation COMPLETELY.** Skimming a pattern and "adapting"
-   it from memory guarantees bugs. Every line, or don't use it.
-
----
-
-## PHASE 3 — Execution
-
-6. Write code that is **EFFECTIVE and EFFICIENT** — in that priority. **NOT** "as short
-   as possible".
-   - **Effective** = actually solves the problem. Ask: *"if I delete this feature,
-     does the problem come back?"* If no → the code is not effective; it is decoration.
-   - **Efficient** = cheap in resources (CPU, memory, I/O, network calls, API quota,
-     money). Avoid repeated work in loops, N+1 API calls, recomputing what you could cache.
-   - **Long code is ALLOWED** if that is the most effective/efficient/safe option.
-     Short code is **not** a goal. (stdlib-first and managed diffs are still good —
-     but they **lose** to effective + efficient.)
-   - **Limit:** step 7 below may **never** be cut for the sake of "efficiency".
-
-7. **Non-negotiable per change — never cut these:**
-   - **Input validation** — trust nothing from outside (user input, files, network,
-     another service).
-   - **Anti data-loss** — never overwrite/destroy data without a recoverable path.
-     Destructive operations get a dry-run or a backup.
-   - **Safety/security** — no secrets in code; no injection; fail **closed** on
-     unknown/ambiguous input (deny, don't allow).
-   - **Error handling** — failures must be visible and diagnosable, never swallowed.
-
-8. ### ⭐ THE PER-FUNCTION CYCLE — one function, one full cycle
-
-   This is the highest-leverage rule in this document.
-
-   ```
-   [1] WRITE → ONE function only. Not five. Not "the module".
-   [2] WORKS → it runs, no error.
-   [3] TEST  → a test for THAT function. It must be GREEN.
-   [4] AUDIT → check the blast radius on other functions.
-   [5] LIVE  → only now use it. Touches money/credentials → DRY-RUN first.
-   [6] EXPLAIN → tell the user, in plain language, how this unit works.
-                ⭐ MANDATORY. See 8.1 below — the user must be able to review it.
-            ↓
-            back to [1] for the next function.
-   ```
-
-   **Use TDD where it fits:** write the failing test first (RED), make it pass
-   (GREEN), then clean up (REFACTOR). Test FIRST proves the test can actually fail —
-   a test written after the code has never been shown to catch anything.
-
-   **Why:** a bug in function A that only surfaces while you are building function D
-   is *many times* more expensive to fix, and far harder to attribute. You will have
-   forgotten your own assumptions from two hours ago.
-
-   **Real failure this rule prevents:** a knee-injury filter that silently discarded
-   `glute_bridge` — a movement that *should* have been the knee-safe substitute. The
-   contradiction was invisible while writing the filter, and only surfaced in a
-   later exploratory pass. Under the per-function cycle, the substitute list would
-   have been tested the moment it was written.
-
-   ### 8.1 — ⭐ STEP 6 IS MANDATORY: explain every unit back to the user
-
-   **After finishing ONE unit / feature / task, you MUST explain how it works — in
-   plain language, to the user.** Not a file list. Not a diff. A *explanation a
-   non-author can follow.*
-
-   **Why this is not optional:**
-
-   > Every other verification in this workflow is done by a machine or by you.
-   > **The user is the only reviewer who knows what the code is actually supposed
-   > to accomplish.** If you never explain it, the user cannot catch a
-   > misunderstanding — they can only discover it later, in production.
-
-   A user who reads *"done, 12 tests passing"* has learned almost nothing. A user who
-   reads *"when a knee-injured user asks for leg exercises, we now pick substitutes by
-   the joint loaded, not the muscle trained — so the list is no longer empty"* can
-   immediately say *"wait, that's not what I meant."*
-
-   **What a unit explanation must contain (keep it short):**
-
-   | # | Element | Example |
-   |---|---|---|
-   | 1 | **What it does** — in one sentence, no jargon | *"Picks safe exercises for a user's injury."* |
-   | 2 | **How it works** — the mechanism or algorithm, step by step | *"Filters by joint loaded → adds substitutes → removes the ones that still load the injured joint."* |
-   | 3 | **Why this way** — the decision and the trade-off | *"By joint, not by muscle — because a knee-safe movement can still be trained by a leg muscle."* |
-   | 4 | **How it was verified** — honestly | *"7 unit tests + ran it on a real knee-injury profile, x/y passing."* |
-   | 5 | **What to check yourself** — point at the risky part | *"Try a knee injury + no equipment; the leg list should have 2-3 items, not 0."* |
-
-   **Rules for the explanation:**
-   - **Plain language.** The user may not be a programmer. No unexplained acronyms.
-   - **Say the trade-off, not just the win.** If you chose speed over memory, say so.
-   - **State the honest test result** — `x/y passing`, red is red. (See ATURAN.)
-   - **Give the user one concrete thing to try.** A review they cannot perform is not
-     a review. Name the input and the expected output.
-   - **Never let it become "I wrote 3 files."** That is a status report, not an
-     explanation, and it transfers no understanding.
-
-   **Scale it by the PRA-PHASE 0.1 answer:**
-   - **Personal repo** → short version is enough: what / how / how verified / what to try.
-   - **Team repo** → same, plus *why this way* and the trade-off, because someone else
-     will maintain it. Team repos also get the full end-of-task report (below).
-
-   **End of task — the full report.** When the whole task is done (not each unit),
-   give the four-line gate report from PHASE 4.12 **plus** a walkthrough of the
-   finished feature: what the user can now do that they could not before, and the
-   files that changed. One unit explanation per unit; one full walkthrough per task.
-
-   > **Anti-pattern:** reporting *"done"* with a bare list of changed files and
-   > nothing else. The user can read `git diff` themselves — **what they cannot
-   > get from the diff is your intent and your reasoning.** Always give the meaning
-   > first, then the code if they want it (see 8.1b).
-   >
-   > **But do not hide the code either.** Hiding it from a user who can read it
-   > removes your best technical reviewer. The rule is *"meaning first, then code"* —
-   > not *"meaning instead of code"*.
-
-   ### 8.1b — ⭐ THE EXPERT REVIEW LAYER (when the user can read code)
-
-   **Plain explanation and code review catch different classes of mistake.** A
-   plain-language summary can catch *"that is not what I meant."* It can **never**
-   catch:
-
-   - an N+1 query inside a loop
-   - a function that is correct but does 10,000× more work than needed
-   - a needless abstraction that will be painful in six months
-   - a silent `except: pass` swallowing real errors
-   - a copied 40-line block that should have been one call
-
-   **An expert owner is the only reviewer who can catch those.** Give them what they
-   need.
-
-   **When the PHASE 0.1b answer is "Expert", every unit explanation ALSO includes:**
-
-   | # | Element | Why it exists |
-   |---|---|---|
-   | 1 | **The code itself** — the diff or the changed function, complete, not paraphrased | They cannot judge what they cannot see |
-   | 2 | **The key decision in technical terms** | e.g. *"one query per exercise, batched — not N+1"* · *"O(n log n) sort, acceptable for n<500"* |
-   | 3 | **The honest trade-off** — what you gave up | e.g. *"readable over fast — this loop is fine at current size but will need caching past ~10k"* |
-   | 4 | **Where you are least confident** | e.g. *"the error path on line 42 is untested; I could not reproduce a malformed key"* |
-   | 5 | **What you want them to judge** | e.g. *"is this abstraction worth it, or should it be inlined?"* |
-
-   **How to deliver it — depends on PHASE 0.1c:**
-   - **Inline mode:** paste the changed code in the reply. Simple, and the reviewer
-     is not switching windows.
-   - **Pointer mode (default):** **paste the changed lines**, then point at the rest —
-     `lib/services/filter.py:34-40` + a one-line anchor. Never paste unchanged
-     context; never make the pointer a substitute for the pasted change.
-   - **Hybrid:** paste the changed region, point at everything else.
-
-   > **Rule that does not bend:** the lines that **changed** are always visible in
-   > the chat. Only the lines that did **not** change may be reduced to a pointer.
-   > A pointer with no pasted diff is an evasion dressed as efficiency.
-
-   **Rules for the expert layer:**
-   - **Never dump the whole file** unless the task *is* the file. Show the changed
-     region plus enough surrounding context to judge it — and when the file is long,
-     let the surrounding context be a **pointer**, not a paste.
-   - **Point at anything you are unsure about yourself.** Volunteering your own
-     weak spot costs nothing and is exactly what a good reviewer needs.
-   - **Do not defend the code.** Present it for judgement, not for approval. If the
-     user says *"this is inefficient"*, that is **the layer working** — not an attack
-     to be argued down.
-   - **Do not show a trimmed/pretty version.** If the real diff is messy, show the
-     real diff. A sanitised excerpt defeats the purpose. *(Pointer mode is not a
-     licence to hide the ugly parts — point at them and say they are ugly.)*
-   - **Never hide a decision you made on the user's behalf.** If you picked a library,
-     a data structure, or a pattern without asking, say so explicitly.
-
-   > **Both layers, always for Expert:** the plain walkthrough **first** (so the
-   > intent is agreed), the code **second** (so the craft is judged). Code first
-   > invites line-level nitpicks before anyone has agreed on what the thing is for.
-
-   ### 8.1c — ⭐ THE LEARNING LAYER (user cannot read code yet, but wants to)
-
-   **This mode exists for one reason: a user who cannot read code today should not
-   still be unable to read it a year from now, having worked with you the whole time.**
-
-   A Learning user **cannot yet catch your technical mistakes** — so this layer does
-   **not** replace the Expert layer as a safety net. It does something different and
-   complementary: it turns every unit into a small lesson, so the reviews get *stronger
-   over time*. In a long-running project, this is the highest-return presentation mode
-   there is.
-
-   **When the PHASE 0.1b answer is "Learning", every unit explanation ALSO includes:**
-
-   | # | Element | What it looks like |
-   |---|---|---|
-   | 1 | **The concept first** — the idea before the syntax | *"This is a 'filter' — a rule that keeps only the items that pass a test. You'll see this everywhere."* |
-   | 2 | **Annotated code** — the real code, but with the *why* per block | Comments/blocks explained: what each part does and why it is there |
-   | 3 | **One term, defined** — not five | Pick the single most important new word and define it plainly. Ignore the rest for now. |
-   | 4 | **Why the code is shaped this way** — in plain words | *"The loop is outside because we only want to open the file once — opening it inside is slower."* |
-   | 5 | **What to notice** — one thing to look for | *"Notice line 3 checks for empty first. That guard is why we never crash on a missing value."* |
-   | 6 | **A place to read more** — only if they ask, or once per task | Docs link, or a one-line search term. **Do not turn this into homework.** |
-   | 7 | **An open invitation, every single time** | *"Ask about any line you want — that is what this mode is for."* |
-
-   **Rules for the learning layer:**
-   - **Annotate, do not obfuscate.** Show the *real, complete* code. Never simplify
-     the code for teaching and then run the simplified version — the learner will
-     misunderstand what is actually deployed.
-   - **Teach the pattern, not the trivia.** *"This is a guard clause"* is reusable.
-     *"This variable is named `tmp2`"* is noise.
-   - **One new concept per unit.** Two taught well beats six taught badly. If a unit
-     genuinely introduces several concepts, teach the core one and **name** the
-     others as "you will meet these soon".
-   - **Never make the user feel behind.** No *"as you should already know"*, no
-     *"obviously"*, no sighing at a basic question. A question asked is the mode
-     working exactly as intended.
-   - **Do not hide the full version.** Show the whole function even if you only
-     annotate part of it, so they build a sense of real-world shape. They can read
-     the rest when ready — and **never assume they are not ready.**
-   - **Pointer mode is allowed here, with one exception.** You may point at
-     `path/file.py:34-40` for the parts you are *not* annotating — but the block you
-     are **teaching** is always pasted in full. A learner cannot learn from a
-     reference number; they need the code in front of them. **Annotating a pointer
-     teaches nothing.**
-   - **Keep the project moving.** Teaching must not stall the work. One focused
-     explanation per unit; deep dives only when the user asks for one.
-   - **Promote without being asked.** If the user has started questioning your
-     technical choices, offer the Expert layer: *"you are reading this well — want me
-     to start showing the code the way I would for a developer?"*
-
-   > **A Learning user is still a reviewer.** Their *"I don't understand this part"*
-   > is genuine signal — it often points at code that is confusing for everyone, not
-   > just for them. Take it seriously; do not wave it away as inexperience.
+- **Never write third-party API usage from memory.** Fetch the current docs
+  (Context7, official docs, the installed package's own source).
+- **Check the installed version.** The docs for `latest` and the version in
+  `requirements.txt` / `package.json` disagree more often than you think.
+- **Prefer the documented call over a clever workaround.** If you must work
+  around the documented path, write down why.
+- **Cite what you relied on** — the doc URL or the file you read — so the user
+  can check it.
 
 ---
 
-## PHASE 4 — Verification
+## PHASE 3 — Execution (TDD-first, per-function cycle)
 
-9. Linter (`dart analyze`, `ruff`, `eslint`, …) — **0 issues**.
+### 3.0 — The TDD Iron Law (mandatory — absorbed from `test-driven-development`)
 
-10. Test suite — run it. **Report the honest number.** Include the exact command and
-    its real output.
+```
+NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
+```
 
-11. E2E manual when UI/flow changed (Playwright for web; click the real thing).
+**Write the test first. Watch it fail. Then write the minimal code to pass.**
 
-12. ### 🔒 THE IMPACT-AUDIT GATE — DO NOT PASS THIS
+**Core principle:** *if you did not watch the test fail, you do not know that it
+tests the right thing.* A test that has never failed has proven nothing.
 
-    Before commit. Two checks, both mandatory:
+**Always:** new features · bug fixes · refactoring · behaviour changes.
+**Exceptions (ask the user first, and say so out loud):** throwaway prototypes ·
+generated code · configuration files.
 
-    **(a) Blast-radius check**
-    - Who **calls** the functions I changed?
-    - Did the **behaviour or return shape** change? Do old callers still hold?
-    - Is there **shared state** (globals, singletons, config, DB rows, caches)?
-    - Does any feature I did **not** touch still work?
+**One honest refinement of the absorbed rule** (see § THE LOCK rule 1): the old
+skill said *"wrote code before the test? delete it, start over."* That stays true
+for **production code that drifted ahead of its test.** It does **not** apply to
+**a spike that already produced a verdict** (§ 0.2a) — there the knowledge is the
+deliverable, and the *spike code* is discarded, not the *finding*. Be precise
+about which one you are doing, and say which.
 
-    **(b) Test + audit — using the embedded discipline below**
+### 3.1 — RED → GREEN → REFACTOR
 
-    #### Testing strategy — pick the MINIMUM sufficient kinds
+| Step | Do | Do not |
+|---|---|---|
+| **RED** | Write **one** minimal test showing what should happen. Run it. **Watch it fail** — for the right reason. | Write several tests at once; write a test that passes immediately. |
+| **GREEN** | Write the **minimum** code that makes it pass. Run it. | Add unrequested features; optimize early. |
+| **REFACTOR** | Clean up with the test green. Run it again. | Change behaviour while refactoring. |
 
-    Do not test everything. Classify the change, then choose:
+**A good test:** clear name, tests **real** behaviour, one thing, fast,
+deterministic. **A bad test:** asserts on implementation details, tests a mock
+instead of the code, name says nothing, passes when the feature is broken.
 
-    | Change | Minimum sufficient tests |
-    |---|---|
-    | Pure function / utility | **Unit** — inputs → outputs, boundaries (0, empty, max, negative) |
-    | Data transformation / parser | **Unit** + **Property** (round-trip: encode→decode returns the original) |
-    | API endpoint / handler | **Integration** — real request through the stack, incl. an invalid one |
-    | Module boundary / contract | **Contract** — provider and consumer agree on the shape |
-    | User flow / UI | **E2E** — one happy path + one failure path |
-    | Bug fix | **Regression** — the test MUST be red before the fix, green after |
-    | Anything | **Regression** for behaviour that must not change |
+**If the test passes the first time you run it,** the test is wrong — it is not
+exercising what you think. Fix the test before touching the code.
 
-    **If the test is for a bug fix:** it must **fail first**, and it must fail **for the
-    right reason**. A test that fails because of a typo, not because of the bug, proves
-    nothing. Run it before the fix. Read the failure message. Then fix.
+### 3.2 — Choose the test type before you write it
 
-    #### Exploratory QA (dogfooding) — finds what unit tests cannot
+Pick the **smallest** test that proves the behaviour. Do not reach for a heavy
+kind when a lighter one answers the question. (Full catalogue: **Appendix A**.)
 
-    Unit tests were written by the same mind that wrote the code, so they *share its
-    blind spots*. A test author who misunderstood the requirement writes a test that
-    happily confirms the misunderstanding. **Exploratory testing is how you escape that.**
+| Level | Proves | Cost |
+|---|---|---|
+| **Unit** | one function/unit behaves correctly | lowest — default choice |
+| **Integration** | units work together (db, fs, network boundary) | medium |
+| **End-to-end** | the user-facing flow works | highest — use sparingly |
 
-    Run the system the way a real user would:
+**Rule of thumb:** one unit test per new branch/behaviour; an integration test
+when a boundary is actually crossed; an E2E test only when a real user path is
+at stake. **Do not** build a test pyramid out of habit — build the tests that
+would **actually catch a regression here**.
 
-    1. **Pick a realistic scenario, not a synthetic one.** Not "call function with
-       input X" — *"a 62-year-old with a bad back, Monday morning, on a phone."*
-    2. **Follow the whole path end-to-end.** Do not jump to the part you changed.
-    3. **Push on edges:** empty state, max values, wrong type, rapid repeat, cancelled
-       mid-flow, no permission, no network.
-    4. **Watch for the silent failure.** The worst bugs are not crashes — they are
-       *empty results, wrong-but-plausible values, and quietly skipped steps*.
-       **An empty list where a list was expected is a bug, not a page.**
-    5. **Capture evidence as you go:** what you did, what you expected, what happened,
-       and the raw output/path. Evidence turns "I think" into "here it is".
-    6. **Write a report**, not a shrug: per issue — steps to reproduce, expected,
-       actual, evidence, severity (Critical/High/Medium/Low), category
-       (Functional/Visual/Accessibility/Console/UX/Content).
+### 3.3 — The per-function cycle — 8 steps (never skip steps 6 or 7)
 
-    **In a browser context specifically:** check the **console** after every navigation
-    and every significant interaction — silent JS errors are among the highest-value
-    findings. Take an annotated screenshot to reason about element positions. Test
-    invalid input as well as valid. Scroll to the bottom; below-the-fold rendering
-    breaks a lot.
+For **each** function / unit of work, in this exact order:
 
-    #### Independent review — never sign your own work
+| # | Step | Meaning |
+|---|---|---|
+| 1 | **WRITE** | Write the failing test first (§ 3.0), then the code. |
+| 2 | **WORKS** | Run it on the **happy path**. Confirm the intended result. |
+| 3 | **TEST** | Run the **edges**: empty, null, zero, negative, huge, unicode, duplicate, concurrent. |
+| 4 | **AUDIT** | Re-read your own change as a stranger: naming, dead code, error handling, secrets, logging of PII. |
+| 5 | **LIVE** | Run the **real** entry point (the app, the CLI, the endpoint) — not just the test. |
+| 6 | **EXPLAIN** | Explain it back to the user (§ 3.8.1) — the *meaning*, not a file list. |
+| 7 | **LINK** | State what changed, where, and how to undo it (§ PHASE 5). |
+| 8 | **NEXT** | Move to the next unit — only after 6 and 7 are done. |
 
-    > **Core principle: no agent verifies its own work. Fresh eyes find what you miss.**
+> **Steps 6 and 7 may NEVER be skipped** — not for a deadline, not for a
+> "one-liner", not because the change "obviously can't break anything". These
+> are the two steps where the user catches a wrong intent **before** it ships.
 
-    - **Security scan** the diff: hardcoded secrets, injection (`eval`, `exec`,
-      `shell=True`, string-formatted SQL), unsafe deserialisation (`pickle`).
-    - **Baseline-aware quality gate:** capture failures *before* your change
-      (stash → run → pop). Only **new** failures block. Pre-existing failures are
-      recorded, not blamed on you.
-    - Where a subagent/reviewer is available, hand it the diff and ask it to
-      *break* the change — not to agree with you.
+### 3.4 — Scope discipline
 
-    #### Honest reporting — non-negotiable
+- **One logical change at a time.** If you notice an unrelated bug, **write it
+  down** and finish the current change first. Do not "while I am here" your way
+  into a 400-line diff.
+- **Do not reformat untouched lines.** It hides the real change from the reviewer.
+- **Match the surrounding code.** Its naming style, its error style, its test
+  style. A "better" style that contradicts the file is a new bug in review.
+- **Delete dead code you created.** Do not leave commented-out blocks; git is
+  the archive.
+- **Never commit secrets.** No keys, tokens, `.env` values, or connection strings
+  in code, tests, fixtures or logs. If you touch one by accident, **say so
+  immediately** — do not quietly remove it and hope.
 
-    - Tests red → **say red.** Tests not run → **say not run.** Something skipped →
-    **say skipped, and why.**
-    - "It should work" is not a test result.
-    - Report the numbers: `x/y passing`.
-    - A confident false success is worse than an honest failure.
+### 3.8.1 — EXPLAIN: explain every finished unit back
 
-    **Report exactly four things:**
-    ```
-    what changed · who is affected · test result (x/y) · residual risk
-    ```
+**Not a bare file list.** The *meaning*:
 
-    **(c) Cleanup** — remove duplication, flatten needless complexity, cut waste,
-    deepen band-aids. This is a **cleanup pass, not a bug hunt**: do not change
-    behaviour. Do not silently "improve" logic while tidying — that is a new change
-    and needs its own cycle.
+1. **What it does** — in the user's language, not the compiler's.
+2. **How** — the approach, briefly.
+3. **Why this way** — including the alternative you rejected, and why.
+4. **How it was verified** — the loop/test you ran, and its result (red → green).
+5. **One thing the user can try** — a concrete command or click.
+6. **Where you are least confident** — say it plainly.
 
-    **If (a), (b), or (c) is not done → FORBIDDEN to enter PHASE 5.**
+**The user is the only reviewer who knows what the code was supposed to
+accomplish.** If you never explain it, you remove their only chance to catch a
+misunderstanding early. **A task is not "done" until the user can review it.**
+
+Present it in the mode chosen at § 0.1b, and deliver it in the mode chosen at
+§ 0.1c — **meaning first, then the changed lines, then a pointer for the rest.**
+
+---
+
+## PHASE 4 — Verification (the Impact-Audit Gate)
+
+### 4.1 — Run the tests. Report the truth.
+
+- Run the tests **you wrote** and the **existing** suite. Both.
+- **Baseline-aware:** capture the failure count **before** your change
+  (`git stash` → run → `git stash pop`). **Only NEW failures block the commit.**
+  Do not claim you broke something that was already broken — and do not
+  hide a new failure behind an old one.
+- **Red is red. Skipped is skipped. Unknown is unknown.** Never write "all tests
+  pass" when any of them failed, were skipped, or were never run.
+- If you could not run the tests, say **why**, and say what that means for
+  confidence. "I did not run it" is an acceptable answer. "It should work" is not.
+
+### 4.2 — Run the real entry point
+
+Tests prove the unit. They do **not** prove the feature. Run the actual thing:
+
+- the CLI command, the endpoint, the page, the app;
+- with **realistic** input, not only the fixture;
+- and look at the result with your own eyes, not just the exit code.
+
+**A green test suite and a broken app is a normal outcome** — it is exactly what
+step 5 of the per-function cycle (§ 3.3) exists to catch.
+
+### 4.3 — Impact-Audit Gate (the reviewer's checklist)
+
+Answer these six, in order. **Any "no" blocks Phase 5.**
+
+| # | Question | If the answer is "no" |
+|---|---|---|
+| 1 | Do the tests pass — **including the ones I did not write**? | fix it, or report it as a **new** failure |
+| 2 | Did I run the **real** entry point, not just tests? | go do it now |
+| 3 | Did I check the **blast radius** — every caller of what I changed? | grep the callers before you commit |
+| 4 | Is the change **exactly** what was asked — no scope creep? | split out the extra work |
+| 5 | Can I **undo** this cleanly, and do I know how? | create the branch/rollback path first |
+| 6 | Would I be comfortable if the user read **every line** of this diff? | rewrite the part that makes you hesitate |
+
+### 4.8 — Static security scan (MANDATORY before every commit)
+
+**Scan added lines only.** Any match is a finding: fix it, or explain why it is
+safe — **in writing**, to the user.
+
+```bash
+# Hardcoded secrets
+git diff --cached | grep "^+" | grep -iE "(api_key|secret|password|token|passwd)\s*=\s*['\"][^'\"]{6,}['\"]"
+
+# Shell injection
+git diff --cached | grep "^+" | grep -E "os\.system\(|subprocess.*shell=True"
+
+# Dangerous eval/exec
+git diff --cached | grep "^+" | grep -E "\beval\(|\bexec\("
+
+# Unsafe deserialization
+git diff --cached | grep "^+" | grep -E "pickle\.loads?\("
+
+# SQL injection (string formatting in queries)
+git diff --cached | grep "^+" | grep -E "execute\(f\"|\.format\(.*SELECT|\.format\(.*INSERT"
+```
+
+**Also check, by eye:** private keys, `.env` values, connection strings with
+credentials, absolute paths containing a username, PII in logs or fixtures,
+secrets in test files (they get published too).
+
+> **If you ever find a real secret in a commit that was already pushed:**
+> say so **immediately and loudly**. Removing it in the next commit does **not**
+> un-leak it — the credential must be **rotated**, and the user must be told.
+> Quietly deleting it is the worst possible response.
+
+### 4.9 — Optional: the four-lens review (from `simplify-code`)
+
+For a change big enough to deserve it, re-read your own diff through four lenses
+**in this order** — output is a list of findings, not a rewrite:
+
+| Lens | Ask |
+|---|---|
+| **1. Reuse** | Does this duplicate something that already exists here? (the most common waste) |
+| **2. Quality** | Naming, dead code, error handling, unclear control flow |
+| **3. Efficiency** | Redundant work, needless allocations/queries/loops, N+1 |
+| **4. Altitude** | Is the change at the right level — too much in one place, or spread too thin? |
+
+**Optional by design** — it is a second pair of eyes, not a gate. Findings go
+into § 4.10 or the report; they do not silently expand the diff.
+
+### 4.10 — Anti-bloat review — the ladder (from `ponytail`), with the guard
+
+**Climb the ladder after you understand the problem — never instead of it.**
+
+1. **Does this need to exist at all?** A speculative need: skip it, and say so in one line. (YAGNI)
+2. **Already in this codebase?** A helper/type/pattern that already lives here → reuse it.
+3. **Does the standard library do it?** Use it.
+4. **Does a native platform feature cover it?** (`<input type="date">` over a picker lib, CSS over JS, a DB constraint over app code.)
+5. **Does an already-installed dependency solve it?** Use it. Do not add a new one for what a few lines can do.
+6. **Can it be one clear line?** Then one line.
+7. **Only then:** the minimum code that works.
+
+**And the guard — read it twice, it overrides rung 6:**
+
+> **EFFECTIVE & EFFICIENT > MINIMUM. Short code is NOT the goal.**
+>
+> Rung 6 is a **hint to check**, never an instruction to obey. Rungs 1–5 are
+> about **not inventing** things that already exist — that part is always right.
+> But when the shortest form is **unreadable, fragile, or hard to maintain**,
+> **the longer version is the correct one. Take it, and say why.**
+>
+> "The best code is the code never written" is true for **speculative** code.
+> It is **false** for code the user actually needs.
+
+**Also absorbed from the same source, because it is simply correct:**
+
+> **Bug fix = root cause, not symptom.** Before editing, **grep every caller** of
+> the function you are about to touch. One guard in the shared function beats a
+> guard in every caller — and patching only the path the ticket names leaves
+> every sibling caller still broken. **Fix it once, where all callers route through.**
+
+### 4.12b — Independent review (never verify your own work)
+
+> **Core principle: no agent should verify its own work. Fresh context finds what you miss.**
+
+Do **not** call Phase 4 complete on the strength of your own re-read. Get a
+**genuinely independent** pass, in this order of preference:
+
+1. **A subagent with no memory of writing the code** — give it the diff and the
+   requirement, ask it to find problems, and do **not** tell it what you think is
+   fine.
+2. **A linter / static analyser / type checker** — objective, cheap, no ego.
+3. **The test suite** — if it can fail on this bug, it is a reviewer.
+4. **At minimum: a fresh read of the diff** — after a break, as if a colleague
+   wrote it.
+
+**This is the rule that the absorbed `requesting-code-review` skill broke:** it
+offered an **auto-fix loop**, which makes the reviewer the author — exactly what
+this rule forbids. **A reviewer may report. The author fixes.** If you
+automatically fix your own findings, you have not had a review.
+
+**Report the review result honestly**, including "the independent pass found
+nothing" — an empty review is a result, not a failure.
+
+### 4.13 — The rule of three, for review loops
+
+| Round | What to do |
+|---|---|
+| 1st review finds issues | Fix them. Re-verify (§ 4.1). |
+| 2nd review finds issues | Fix them — but **look for a pattern**. Two rounds of the same class of problem means the task was misunderstood. |
+| 3rd round | **Stop.** Do not enter a fourth. Report honestly: what keeps coming back, and that you suspect the scope or the requirement is the real problem. |
 
 ---
 
 ## PHASE 5 — Version Control & Deploy (LOCKED until the Impact-Audit Gate passes)
 
-> **Why versioning matters here:** the Impact-Audit Gate reduces bad changes.
-> Version control makes them **recoverable**. A change you cannot undo is not a
-> change — it is a gamble. This phase is what makes "I broke it" a 30-second
-> problem instead of an afternoon.
-
-**Precondition:** PHASE 4 step 12 passed. Committing an unverified change is
-shipping a guess.
-
 ### 5.1 — Pick your mode (from the answer you already got in PRA-PHASE 0.1)
 
-**You already asked this.** PRA-PHASE 0.1 establishes whether the repo is personal,
-team, or unknown. **Use that same answer here — do not ask twice, and do not
-contradict it.** If you skipped 0.1, go back and ask now.
-
-With the answer in hand, pick the ceremony level:
-
-| | **Solo / throwaway** | **Solo / real project** | **Team / public repo** |
-|---|---|---|---|
-| Branch | commit to `main` OK | branch if >1 commit | **always branch** |
-| Commit size | loose | **atomic** | **atomic, reviewed** |
-| SemVer | optional | **yes** | **yes** |
-| Tag releases | no | yes | **yes + release notes** |
-| CHANGELOG | no | short | **full, maintained** |
-| Rewrite history | free | careful | **never on shared branches** |
-
-**How to tell which you are in:**
-- Will anyone else read this repo, now or later? → **Team / public**
-- Will *past-you* need to understand this in 6 months? → **at least Solo / real project**
-- Is this a spike, a scratch file, or a one-off script? → **Solo / throwaway**
-
-**When unsure, pick the stricter mode.** Downgrading later is easy; recovering
-from a botched shared history is not.
-
-> **Consistency check:** your answer here must match PRA-PHASE 0.1. If you told the
-> user you were working in a personal repo, you may commit to `main`. If it is a team
-> repo, you may not — no exceptions for "it's a small change".
+| Repo | Track |
+|---|---|
+| **Solo / throwaway** | Direct on the working branch is acceptable. Self-review allowed **only if you say so**, and **never on a bug fix**. |
+| **Team / shared / public** | Branch, PR, CI, **independent** review. No exceptions. |
+| **When unknown** | Treat as **team**. |
 
 ### 5.2 — Branch (unless solo/throwaway)
 
 ```bash
-git checkout -b feat/short-name      # or fix/, chore/, docs/
+git checkout -b <type>/<short-slug>      # feat/, fix/, chore/, docs/, refactor/
 ```
 
-Name it after the *intent*, not the file: `fix/knee-filter-empty-list`, not
-`fix/plan-engine-2`.
-
-The branch is your **way home**. On a branch, a bad experiment costs one command:
-`git checkout main`. On `main`, it costs an archaeology session.
-
-> **Never commit directly to `main` on a shared or public repo.** If you already
-> did, stop and fix it before pushing — see 5.6.
+Use a descriptive slug, not your name or a date. One branch = one logical change.
 
 ### 5.3 — Commits: one logical change per commit (atomic)
 
-**The test:** can this commit be described in one `type(scope): subject` line
-with no "and"? If it needs an "and", split it.
-
-```bash
-git add <specific files>          # NOT `git add .` — that is how secrets and
-git commit -m "type(scope): subject"   # junk get committed
-```
-
-**Conventional commit types:**
-
-| Type | For |
-|---|---|
-| `feat` | new behaviour for the user |
-| `fix` | a bug fix |
-| `refactor` | same behaviour, better structure |
-| `test` | tests only |
-| `docs` | documentation only |
-| `chore` | build, deps, config, tooling |
-| `perf` | performance improvement |
-
-**Why atomic matters — this is the whole point:** `git revert <sha>` undoes exactly
-one logical change. If one commit contains five changes, reverting the broken one
-also throws away the four that worked. **Atomic commits are what make rollback
-surgical.**
-
-**Before every commit:**
-```bash
-git status           # what am I actually about to stage?
-git diff --staged    # read the diff — really read it
-```
-- No secrets, keys, `.env`, credentials, large binaries, or generated files.
-- If you spot something unrelated, do not "fix it while I'm here" — it is a
-  separate change with its own cycle.
+- **Atomic:** each commit does **one** thing and passes the tests **on its own**.
+- **Message shape:** imperative subject ≤ 72 chars, then a body with **why**
+  (the *what* is in the diff).
+  `fix(filter): keep glute_bridge when the user has a knee injury`
+- **No mixed content:** do not put a refactor and a behaviour change in one
+  commit — they need to be revertible separately.
+- **Never commit:** secrets, `.env`, build output, editor files, big binaries,
+  or a file you have not read.
 
 ### 5.4 — Semantic Versioning (SemVer)
 
-Format: **`MAJOR.MINOR.PATCH`** — e.g. `2.4.1`.
-
-| Bump | When | Example |
-|---|---|---|
-| **MAJOR** | breaking change — existing callers must change | `1.9.0 → 2.0.0` |
-| **MINOR** | new feature, backward-compatible | `2.3.1 → 2.4.0` |
-| **PATCH** | bug fix, backward-compatible | `2.4.0 → 2.4.1` |
-
-Below `1.0.0`, anything may break at any time — that is what `0.x` signals.
-
-**Non-negotiables:**
-- One source of truth for the version (a manifest file, or a git tag). **Not two
-  numbers that can disagree.**
-- A released version is **immutable**. Wrong? Bump again. Never re-point a version
-  someone may already depend on.
-- Bump the version **in the same commit as the release**, not "later".
+| Change | Bump |
+|---|---|
+| Backwards-incompatible | **MAJOR** |
+| New capability, compatible | **MINOR** |
+| Bug fix / internal only | **PATCH** |
 
 ### 5.5 — Tag + CHANGELOG (release only)
 
-```bash
-git tag -a v2.4.0 -m "Release 2.4.0"
-git push origin v2.4.0
-```
-
-**Annotated tags (`-a`), not lightweight.** A tag with a message carries author,
-date, and intent — it is a real release record.
-
-**CHANGELOG.md** — newest first, written for a *human deciding whether to upgrade*:
-
-```markdown
-# Changelog
-
-## [2.4.0] - 2026-10-02
-### Added
-- Nutrition profiles for 7 countries
-### Fixed
-- Knee-injury filter no longer discards valid substitutes
-### Changed
-- Senior profiles reduce intensity instead of tier
-
-## [2.3.1] - 2026-09-28
-### Fixed
-- Meal totals off by one serving
-```
-
-Keep-a-Changelog sections: `Added` / `Changed` / `Deprecated` / `Removed` /
-`Fixed` / `Security`. **Describe the effect on the user, not the source file.**
-"Fixed knee filter discarding substitutes" — not "changed line 42".
-
-**Skip the CHANGELOG** in Solo/throwaway mode. Add it the moment someone else
-(or future-you) depends on the code.
+- Update `CHANGELOG.md` under a new heading `## [x.y.z] - YYYY-MM-DD`.
+- Use the **real** date. **Get the date from the system clock, not from memory** —
+  a wrong release date is a small lie that ships to everyone.
+- Tag **after** the changelog commit: `git tag -a vX.Y.Z -m "..."` → push the tag.
+- **The changelog entry and the tag must agree.** If they disagree, the changelog is wrong.
 
 ### 5.6 — Rollback: know the way home *before* you need it
 
-Pick the smallest tool that fixes the problem:
-
-| Situation | Command | Notes |
-|---|---|---|
-| Not committed yet | `git restore <file>` / `git checkout -- <file>` | safest — nothing is public |
-| Bad commit, **not pushed** | `git reset --soft HEAD~1` | undoes commit, **keeps** your edits |
-| Bad commit, **pushed to shared branch** | `git revert <sha>` | makes a *new* commit that undoes it |
-| Whole release is bad | `git revert <range>` or deploy previous tag | e.g. `git checkout v2.3.1` |
-| Need to look around safely | `git stash` / `git worktree add ../tmp` | does not disturb the working tree |
-| Finding which commit broke it | `git bisect start` … `git bisect run <test>` | binary search over history |
-
-**The rule that prevents most pain:**
-
-> **NEVER `git reset` / `git rebase` / `git push --force` on a branch others may
-> have pulled.** Rewriting shared history breaks every copy of it. If it is
-> already pushed and shared → **`git revert`**. Revert is additive and safe.
-
-`git commit --amend` and `git reset` are fine **before** push, on your **own
-branch**. After push, on a shared branch, they are the start of an incident.
+- Know the **undo** for every step, and state it: `git revert <sha>` for a pushed
+  commit, `git checkout -- <file>` for uncommitted, the tag/branch to return to.
+- **Never rewrite shared history.** Once pushed to a shared branch, **fix forward
+  with `git revert`.**
+  **`reset` · `rebase` · `push --force` on a shared branch is forbidden** — that is
+  how one mistake becomes everybody's problem.
+- Before anything destructive: **state what will be lost, and get a yes.**
 
 ### 5.7 — Coding journal
 
-Append an entry: task, approach, problems, solution, files, tests, lesson.
-Format in Appendix A. **Overwrite nothing** — append only.
-
-The journal complements git: git records *what* changed, the journal records
-*why you chose it* and *what bit you*. Git blame does not know why you rejected
-the alternative.
+Append an entry per solved problem (format in **Appendix A**). The journal is how
+the *next* session — and future you — avoids re-solving the same problem. It is
+written **after** the change is verified, never instead of verifying it.
 
 ### 5.8 — Deploy + verify
 
-After deploying, check the real thing — health endpoint, live URL, smoke test.
-**"Pushed" is not "working", and "deployed" is not "correct".**
+1. Deploy the **exact** artifact you tested (not a rebuilt one).
+2. Verify the deployed thing: hit the endpoint, load the page, run the command.
+3. Watch the logs/errors for a few minutes.
+4. Report what you deployed, where, and the evidence that it works.
 
-If the deploy is bad, roll back using 5.6 *first*, diagnose *second*. A
-known-bad version running in production is not a learning opportunity — it is an
-outage.
+### 5.9 — Pull request lifecycle (absorbs `github-pr-workflow`)
+
+**Auth and repo detection first:**
+
+```bash
+gh auth status                          # is gh authenticated?
+git remote -v                           # owner/repo for the PR target
+```
+
+**The loop:**
+
+1. **Push the branch:** `git push -u origin <branch>`
+2. **Open the PR** with a real body: what changed, why, how it was verified, and
+   a **test plan** the reviewer can follow.
+3. **Watch CI.** Do not walk away and assume green:
+   ```bash
+   gh pr checks --watch                    # or: gh run list --branch <branch>
+   ```
+4. **Fix CI failures honestly.** Get the failure detail (`gh run view --log-failed`),
+   fix the *cause*, push, and re-verify. **Do not** re-run a flaky job and call it
+   fixed until you know why it failed once.
+5. **Merge** only when checks are green and review is done. Prefer a **squash or
+   merge commit** consistent with the repo's history — do not introduce a new style.
+6. **After merge:** delete the branch, pull the base branch, and confirm the
+   deployed/merged state.
+
+**References for this section** (read, do not improvise):
+`references/github/conventional-commits.md` (commit format) ·
+`references/github/ci-troubleshooting.md` (a red CI run that will not go green) ·
+`references/github/templates/pr-body-feature.md` ·
+`references/github/templates/pr-body-bugfix.md` (PR body skeletons).
+
+**Never:** force-push a shared PR branch · merge with red checks because the
+deadline is close · describe the CI state as green when you did not look.
+
+### 5.10 — From an issue to a PR (absorbs `github-issue-to-pr`)
+
+When the task arrives as an **issue** (not a direct request), the risk is
+different: the issue may be **stale, already fixed, or based on a wrong premise.**
+
+1. **Read the live issue** — body **and the full thread**. Comments often contain
+   the real requirement, or a maintainer's decision that overrides the title.
+2. **Sweep for duplicates** — search existing PRs/branches for work already done.
+   Do not build a second implementation of the same fix.
+3. **Validate the premise** against the **current** code — and against design
+   intent. If the reported behaviour is **correct by design**, say so and stop;
+   do not "fix" a feature.
+4. **Define acceptance and risk** before coding: what proves it fixed, what could
+   break.
+5. **Implement the smallest complete change** — and **fix the class, not the
+   instance** (see § 4.10: one guard where all callers route through).
+6. **Prove the regression test bites — the sabotage run.** Sabotage the fix
+   (revert it, or break the line) and confirm the test **goes red**. A test that
+   stays green under sabotage is not testing the bug. **Restore the fix, confirm
+   green.** Report both colours.
+7. **Run the repo's own quality gates**, then open the PR **immediately** — do
+   not let a verified fix sit unshared.
+8. **Shepherd CI honestly** (§ 5.9 step 3–4) and **close the loop**: link the PR to
+   the issue, state what shipped, and what remains open.
+
+**Pitfall:** treating "the issue says X" as "X is true". Verify first.
+
+### 5.11 — Porting a change across branches (absorbs `git-patch-porting`)
+
+When a fix must land on an **older branch** (release line, fork, stale checkout),
+**do not copy-paste the diff.** Port it and re-verify.
+
+- **Core rule: a ported patch is a new change, not a copy.** It must pass **its
+  own** tests on the target branch.
+- Use `git cherry-pick <sha>` when the branches are close; resolve conflicts
+  deliberately. For distant branches, re-implement the *intent*, not the text.
+- **Do not port tests blindly** — the target branch may have a different harness.
+- Verify on the target: run its suite, run its entry point. Report the target's
+  result, not the source's.
+- **Pitfall:** assuming "same code = same behaviour" when a dependency, config or
+  schema differs. Check the versions.
+
+**Reference for this section:** `references/git/stale-checkout-port.md` — the full
+procedure for landing a patch in a stale checkout or fork.
+
+### 5.12 — Resolving a merge conflict (absorbs `merge-reconciler`)
+
+When two sides disagree, the failure mode is **silently picking a side** — or
+worse, "resolving" by keeping both and breaking the code.
+
+**Impartiality contract:** the goal is not "my side wins", it is **the correct
+combined result.**
+
+1. **Gather both sides.** Read the **full** intent of each: `git log --merge`,
+   `git diff --ours`, `git diff --theirs`. Understand **why** each side changed.
+2. **Classify every conflicted hunk:** *(a)* the same change on both sides
+   (trivial), *(b)* genuinely different intent (needs a decision),
+   *(c)* one side supersedes the other (keep the newer **intent**, not the newer text).
+3. **Resolve deliberately.** For *(b)* and *(c)*, you are making a design
+   decision — **state it and justify it**, out loud.
+4. **Verify the result.** A conflict resolution is **code**: run the tests, run the
+   entry point, and read the merged region — the classic failure is a merge that
+   compiles and behaves differently.
+5. **Hand back:** say which hunks took which resolution, and anything you had to
+   decide for the user.
+
+**Pitfalls:** resolving by "keep mine" · dropping the other side's test · a merge
+that passes tests but changes behaviour · **and the classic: a conflict marker
+left in the file.** Always `grep -rn "<<<<<<<" .` before you commit.
 
 ---
 
-## ATURAN / RULES
+## PHASE 6 — Honest Report, Explanation & Journal
 
+### 6.1 — The honest report (non-negotiable)
+
+Report exactly what happened, in this shape:
+
+| Field | Rule |
+|---|---|
+| **What I did** | The change, in one or two sentences of *meaning* |
+| **How I verified it** | The **exact command** and its **observed result**, both colours |
+| **What is red** | Failures, skips, warnings — **as they are** |
+| **What I did NOT do** | Untested paths, skipped phases, unrun commands |
+| **What I am unsure about** | The part where you are least confident |
+| **What could break** | Blast radius, and how to notice |
+
+**The three forbidden phrasings:**
+
+- *"All tests pass"* — when any test failed, was skipped, or was never run.
+- *"It should work"* — when you did not run it. Say **"I did not run it."**
+- *"Done"* — before the user can review it (§ 3.8.1).
+
+**Red is red. Skipped is skipped. Unknown is unknown.**
+A silent skip is the failure this entire protocol exists to prevent.
+
+### 6.2 — Explain every unit back
+
+The six-part explanation from § 3.8.1 — meaning first, then the changed lines,
+then a pointer for the rest, in the delivery mode the user chose (§ 0.1c).
+
+### 6.3 — Journal entry
+
+Append to the coding journal (**format: Appendix A**). Task · approach · what
+went wrong · the lesson. Written **after** verification, never instead of it.
+
+---
+
+# ATURAN / RULES
+
+These are the standing rules. Each one exists because its absence caused a real
+problem — most of them in the session that produced v3.0.
+
+- **Effective & efficient > minimum.** Do not be proud that the code is short; be
+  proud that it hits the target, saves resources, and is safe. (§ THE LOCK 1)
 - **Skipping a phase is allowed only when it genuinely does not apply** (e.g. no
-  external library → skip PHASE 2). **Say out loud why you skipped it.**
-  Silent skipping is the failure mode this whole protocol exists to prevent.
-- **Effective & efficient > minimum.** Do not be proud that the code is short; be proud
-  that it hits the target, saves resources, and is safe.
-- **The per-function cycle (PHASE 3 step 8) and the Impact-Audit Gate (PHASE 4 step 12)
-  may NEVER be skipped** — not for a deadline, not for a "one-liner", not because the
-  change "obviously can't break anything".
-- **Never verify your own work.** Get a second pass — a subagent, a linter, a test,
-  or at minimum a fresh read of the diff.
+  external library → skip PHASE 2). **Say out loud why you skipped it.** Silent
+  skipping is the failure mode this whole protocol exists to prevent.
+- **The per-function cycle steps 6 and 7 (EXPLAIN, LINK) and the Impact-Audit
+  Gate (§ 4.3) may NEVER be skipped** — not for a deadline, not for a "one-liner",
+  not because the change "obviously can't break anything".
 - **Root cause before fix.** "Quick fix now, investigate later" is how you get the
-  same bug twice.
+  same bug twice. (§ 1.1–1.3)
+- **Build the red-capable feedback loop before you read code to theorise.**
+  (§ 1.2) A loop you have not seen fail has proven nothing.
+- **Never verify your own work.** A reviewer may **report**; the **author fixes**.
+  (§ 4.12b)
 - **Honest reports only.** Red is red. Skipped is skipped. Unknown is unknown.
-- **Every change must be reversible.** Branch, atomic commits, and a known rollback
-  path are part of "done" — not optional polish. If you cannot undo it, you do not
-  control it. See PHASE 5.
-- **Never rewrite shared history.** Once pushed to a shared branch, fix forward with
-  `git revert`. `reset` / `rebase` / `push --force` on shared branches is how one
-  mistake becomes everyone's problem.
-- **Establish repo ownership before writing code** (PRA-PHASE 0.1) — personal or
-  team? It sets the strictness of *every* later phase: how hard you check blast
-  radius, whether you may review your own work, whether you branch. Asking this at
-  commit time means the whole workflow ran at a guessed strictness.
-  **When unknown, treat it as a team repo.**
-- **Explain every finished unit back to the user** (PHASE 3.8.1). Not a bare file
-  list — the *meaning*: what it does, how, why this way, how it was verified, and one
-  thing the user can try. **The user is the only reviewer who knows what the code was
-  supposed to accomplish**; if you never explain it, you remove their only chance to
-  catch a misunderstanding early. A task is not "done" until the user can review it.
-- **Match the review to the reviewer** (PRA-PHASE 0.1b). Ask **two** things — *can*
-  they judge code, and do they *want* to understand it. If the user can read code,
-  **show them the code** — the diff, the technical decision, the trade-off, and where
-  you are least confident (PHASE 3.8.1b). **Never hide the code from someone able to
-  judge it; never dump code on someone who cannot.**
-- **Never lock a willing learner out of code.** If the user cannot read code yet
-  **but wants to**, that is **Learning** mode (PHASE 3.8.1c) — annotated real code,
-  one concept at a time, and an open invitation to ask. Treating a willing learner as
-  a plain reader is the one presentation choice that leaves the user *worse off* for
-  having worked with you. **"Cannot read code" and "does not want to learn" are not
-  the same thing.**
-- **Deliver the code the way the user asked** (PRA-PHASE 0.1c). Inline, or a pointer
-  like `lib/services/filter.py:34-40`. **The lines that CHANGED are always pasted;
-  only the unchanged context becomes a pointer.** A pointer with nothing pasted is not
-  a compact review — it is a withheld one. **Meaning first, then the changed code,
-  then a pointer for the rest.**
+  (§ 6.1)
+- **Every change must be reversible.** Branch, atomic commits, and a known
+  rollback path are part of "done" — not optional polish. **If you cannot undo
+  it, you do not control it.** (§ 5.6)
+- **Never rewrite shared history.** Once pushed to a shared branch, fix forward
+  with `git revert`. `reset` / `rebase` / `push --force` on shared branches is how
+  one mistake becomes everyone's problem. (§ 5.6)
+- **Establish repo ownership before writing code** (§ 0.1). **When unknown, treat
+  it as a team repo.**
+- **Match the review to the reviewer** (§ 0.1b). **Never hide the code from
+  someone able to judge it; never dump code on someone who cannot. Never lock a
+  willing learner out of code.**
+- **Deliver the code the way the user asked** (§ 0.1c). The lines that **changed**
+  are always pasted; only unchanged context becomes a pointer. **A pointer with
+  nothing pasted is a withheld review, not a compact one.**
+- **Fix the class, not the instance.** Grep every caller; fix once where all
+  callers route through. (§ 4.10)
+- **Scan for secrets before every commit** (§ 4.8). **If a real secret was
+  already pushed, say so immediately — the credential must be rotated.**
+- **Ask, do not guess** — when the goal itself is vague (§ 0.2c). Guessing wrong
+  costs more than one question.
 
 ### If you are tempted to skip — read this table
 
-| Excuse | Reality |
+| The temptation | The reality |
 |---|---|
-| "Issue is simple, no need for process" | Simple issues have root causes too. The process is fast for simple bugs. |
-| "Emergency — no time" | Systematic is **faster** than guess-and-check thrashing. |
-| "Just try this first, then investigate" | The first fix sets the pattern. Do it right from the start. |
-| "I'll write the test after confirming it works" | Untested fixes don't stick. Test first proves it. |
-| "Multiple fixes at once saves time" | You can't tell which worked, and you add new bugs. |
-| "The reference is long, I'll adapt from memory" | Partial understanding guarantees bugs. |
-| "I can see the problem, let me fix it" | Seeing a symptom ≠ understanding the cause. |
-| "One more fix attempt" (after 2+ failures) | **3+ failures = architectural problem.** Question the pattern; don't patch again. |
-| "An empty result is fine" | An empty result where data was expected is usually **the bug**. |
-| "It's just a small change, I don't need to ask about the repo" | Small changes to a shared repo still break other people. **Ask at the start** (PRA-PHASE 0.1) — it is one question, and it sets the strictness for everything after. |
-| "I'll figure out if it's team or personal when I commit" | By then your blast-radius depth, review choice, and branching were already decided on a guess. |
-| "Done — here are the files I changed" | That is a status report, not an explanation. The user can read the diff; they need the **meaning** (PHASE 3.8.1). |
-| "The user will read the code if they want to know" | They asked you to build it *because* they are not the one reading the code. Unexplained work is unreviewable work. |
-| "The tests pass, that's the verification" | Tests verify *your* understanding. Only the user can verify the understanding is the *right one*. |
-| "The user can read `git diff` if they want the code" | True — but only if you **show them which part matters** and say what you are unsure about. A diff dumped without framing is not a review. |
-| "The explanation is enough, no need to show code" | A plain summary cannot reveal an N+1 query, a needless abstraction, or a swallowed exception. If the user can read code, **withholding it costs you your best reviewer**. |
-| "Showing the code will invite nitpicks" | That is the layer **working**. A technical objection from the owner is cheaper now than in production. Do not argue it down. |
-| "They can't read code, so keep it plain" | Only if they **also** don't want to learn. If they want to learn, plain mode locks them out forever — use **Learning** mode (3.8.1c). This is the one mode choice that makes the user worse off. |
-| "Explaining the concept will slow the project down" | It costs one paragraph per unit. The alternative is a user who can never review your work at any depth, for the whole project. |
-| "They'll ask if they want to understand it" | Beginners often don't know what to ask — they don't know what exists to ask about. **Offer the option; don't wait for the request.** |
-| "I'll simplify the code so it's easier to read" | Then they learn the wrong code. **Annotate the real thing** — never show a simplified version of what you actually deployed. |
-| "A pointer is shorter, I'll just give the file and line" | Only for the lines that **did not change**. The changed lines get pasted regardless — otherwise you have not made the review shorter, you have removed it. |
-| "The chat is getting long, I'll stop pasting the code" | Then paste **less context**, not **less change**. Changed lines stay; surrounding context becomes a pointer. |
-| "They have the repo, they can open the file" | True for unchanged context. For the change itself, **making them hunt for it is the evasion the pointer is meant to avoid.** |
-| "Pasting the code burns tokens" | Unchanged lines do. Point at those — `path/file.py:34-40`. The diff itself is the one thing worth the tokens. |
-
-### The Rule of Three (when a fix does not work)
-
-1. **STOP.** Count your fix attempts.
-2. If **< 3**: return to PHASE 1 and re-analyse with the new information.
-3. If **≥ 3**: **stop fixing and question the architecture.**
-   Signals: each fix reveals new coupling somewhere else; each fix needs "massive
-   refactoring"; each fix creates a fresh symptom elsewhere.
-   **This is not a failed hypothesis — this is the wrong architecture.** Discuss with
-   the user before attempting fix #4.
+| "It's a one-liner" | One-liners cause outages. The cycle is minutes. |
+| "Tests are obvious, I'll add them after" | A test written after the code tests the code, not the requirement. |
+| "No time to find root cause" | You have time to fix it twice? Thrashing is slower than thinking. |
+| "I'll explain later" | Later never comes, and the user loses their only chance to catch it. |
+| "It's my own repo, no review needed" | You are the worst reviewer of your own bug. Get a fresh read. |
+| "The user said hurry" | Say what you skipped. Then hurry *honestly*. |
+| "I don't need to write this down" | Next session starts from zero. The journal is the only memory. |
+| "It works on my machine" | Run the real entry point (§ 4.2), not the fixture. |
 
 ---
 
 ## Quick Reference
 
-| Phase | Do | Done when |
-|---|---|---|
-| **PRA** | **Ask repo ownership + review level + delivery mode (inline/pointer)** · spike / plan / ask | You know who the code is for, how deeply they review, and how they want it delivered |
-| **0. Context** | Skills, journal, blast radius | You know what you're touching and who else touches it |
-| **1. Analysis** | Root cause, tight loop, evidence, trace | You can state the cause in one testable sentence |
-| **2. Reference** | Read current docs completely | No API written from memory |
-| **3. Execution** | Effective code + per-function cycle | Every function tested, explained, **and code-shown if the user reads code** |
-| **4. Verification** | Strategy + exploratory QA + review + honest report | Gate (a)(b)(c) passed |
-| **5. Version Control & Deploy** | Mode, branch, atomic commits, SemVer, tag, rollback, verify live | It works in the real environment **and can be undone** |
+```
+PRA-PHASE   0.0 vague idea?   → spec (brief)    0.1 who owns the repo?
+            0.1b review level? 0.1c delivery?   0.2 clear & low-risk?
+            └ 0.2a SPIKE · 0.2b PLAN · 0.2c ASK
+PHASE 0     Load context (rules → skills → the code → conventions)
+PHASE 1     Analysis & root cause   ← Iron Law + FEEDBACK LOOP + Rule of Three
+PHASE 2     Reference — only with an external library/API
+PHASE 3     Execution — TDD red→green→refactor + the 8-step per-function cycle
+PHASE 4     Verification — tests · real entry point · IMPACT-AUDIT GATE ·
+            secret scan · 4-lens · ladder (with guard) · INDEPENDENT review
+PHASE 5     Git — branch · atomic commits · SemVer · rollback · PR · issue→PR
+            (sabotage run) · porting · merge conflicts
+PHASE 6     Honest report · explain back · journal
+```
 
-**Nine rules that carry most of the weight:**
+**The six minimum, always:**
+
+```
 1. Root cause before fix.
-2. One function, one full cycle.
+2. One function, one full cycle (write → works → test → audit → live → explain → link).
 3. Never verify your own work.
-4. Explore it like a real user, not like its author.
-5. Report honestly — red is red.
-6. **Explain it back to the user — in plain language — so they can review it.**
-7. **Show the code when the user can read it** — plain summary alone misses the
-   technical mistakes only an expert reviewer can catch.
-8. **Never lock a willing learner out of code** — a beginner who wants to understand
-   gets annotated real code, one concept at a time. Not plain mode forever.
-9. **Deliver code the way the user asked** — inline, or `file.py:34-40`. Changed
-   lines always pasted; only unchanged context becomes a pointer.
-
-**And one that makes the rest survivable:** every change reversible.
-
----
-
-## Appendix A — Coding Journal format
-
-Locations: one per project, e.g. `.hermes/coding_journal.md`, or `NOTES.md`.
-**Search before coding. Append after coding.** Never overwrite the file.
-
-```markdown
----
-
-## [YYYY-MM-DD] <short-title>
-
-**Task**: <what the user asked for>
-
-**Approach**: <why this approach, not the alternatives>
-
-**Problems**:
-1. <problem found — the real error message, crash, mismatch>
-2. <second problem if any>
-
-**Solution**: <exactly what changed — file, function, key line>
-
-**Files**: <files changed>
-
-**Tests**: <result — pass/fail, how many>
-
-**Lesson**: <one or two sentences for future you>
+4. Report honestly.
+5. Explain every unit back to the user.
+6. Every change undoable.
 ```
 
 ---
 
-## Appendix B — Why this file has no dependencies
+## Appendix A — Testing catalogue & journal format
 
-Earlier versions of this skill delegated its testing, debugging, and QA discipline to
-sibling skills by name. That works inside one specific agent runtime and **breaks
-everywhere else** — a reader on another tool hits *"load `dogfood`"* and has no idea
-what that is.
+### A.1 — Classify the task first (from `testing-strategy`)
 
-So the substance was **inlined**: root-cause discipline (§PHASE 1), per-function cycle
-(§PHASE 3.8), testing strategy + exploratory QA + independent review (§PHASE 4.12),
-and the journal format (Appendix A).
+**Pick the *minimum sufficient* set of test types. Do not blanket-apply all of
+them — most tasks need 1–3.**
 
-Nothing is lost. If you have richer dedicated tools — a real browser-QA harness, a
-full debugger, a subagent fleet — **use them**; this file is the floor, not the ceiling.
+| Question | If yes → |
+|---|---|
+| Pure function / business rule, no I/O? | `unit` |
+| Touches DB, filesystem, network, another service? | `integration` |
+| User-visible multi-step flow? | `e2e` |
+| Depends on an external API / clock / random / payment? | `test-doubles` |
+| Money, auth, or data-loss-adjacent? | `property` + `unit` |
+| UI component with stable render output? | `snapshot` |
+| Consumes someone else's API? | `contract` |
+| Hot path / will take real traffic? | `load` |
+| Fixing a reported bug? | `regression` |
+| Refactor with existing tests? | keep existing + `coverage` delta |
+
+**Default matrix — start here, escalate only when evidence demands it:**
+
+| Task shape | Minimum set |
+|---|---|
+| Pure logic (parsing, math, state machine) | `unit` |
+| Service + DB | `unit` + `integration` (+ `fixtures`) |
+| Service + third-party API | `integration` + `test-doubles` (+ `contract` if you own both sides) |
+| REST/GraphQL endpoint | `integration` + `contract` |
+| Auth / money / critical invariant | `unit` + `property` |
+| User flow (signup → action → confirm) | `e2e` (1 happy path) + `integration` for branches |
+| Bug fix | `regression` (**reproduce first — it must fail before the fix**) |
+| Refactor | existing suite + `coverage` delta |
+| UI component library | `snapshot` + `unit` for prop logic |
+| High-traffic endpoint / batch job | `load` (**after** correctness is proven) |
+
+> A CRUD endpoint does not need `load` + `e2e` + `contract` + `snapshot`.
+> **Escalate only when evidence demands it.**
+
+### A.2 — Order of writing (always)
+
+1. **Reproduce:** for a bugfix, write the failing test **first** and run it. It
+   **must** fail, for the **right** reason.
+2. **Fastest layer first:** `unit` → `integration` → `e2e`.
+3. **One behaviour per test.** Name states the behaviour, not the function.
+4. **Arrange–Act–Assert**, blank line between blocks.
+5. **No logic in tests** — no `if`, no loops over assertions. Parametrize instead.
+6. **Run the suite.** Report the exact command and the result.
+
+### A.3 — Full references (12 files, moved into `references/testing/`)
+
+| Reference | Use for |
+|---|---|
+| `references/testing/unit.md` | isolated logic, no I/O |
+| `references/testing/integration.md` | real DB/HTTP/FS boundaries |
+| `references/testing/e2e.md` | full user flow through the real stack |
+| `references/testing/test-doubles.md` | stubs, fakes, spies, mocks |
+| `references/testing/flaky.md` | diagnosing nondeterminism |
+| `references/testing/coverage.md` | measuring and reading coverage |
+| `references/testing/fixtures.md` | setup/teardown, factories, temp state |
+| `references/testing/property.md` | hypothesis / fast-check invariants |
+| `references/testing/snapshot.md` | golden files, UI rendering |
+| `references/testing/contract.md` | consumer-driven API contracts |
+| `references/testing/load.md` | throughput, latency, soak |
+| `references/testing/regression.md` | reproducing fixed bugs permanently |
+
+### A.4 — High-yield invariants for money / critical code
+
+When the code moves money or guards a critical invariant, assert these with
+`hypothesis` over **generated** inputs, not a handful of hand-picked cases:
+
+- **Sign errors.** A "max loss" check written `abs(pnl) > limit` also trips on
+  **profit** — the bot stops trading exactly when it is winning. Assert: profit
+  never trips a loss guard.
+- **Division by an unguarded input.** Guards often check one denominator
+  (`avg_loss`) and forget another (`avg_win`). Assert the function never raises
+  `ZeroDivisionError` across the input domain.
+- **Guard the value you actually divide by**, not the raw input.
+
+These properties find real bugs fast — they are worth the setup cost.
+
+### A.6 — GitHub & git references (5 files, moved into `references/`)
+
+| Reference | Use for |
+|---|---|
+| `references/github/conventional-commits.md` | commit message format — types, scope, breaking changes |
+| `references/github/ci-troubleshooting.md` | diagnosing a red CI run (auth, cache, flake, runner) |
+| `references/github/templates/pr-body-feature.md` | PR body skeleton for a feature |
+| `references/github/templates/pr-body-bugfix.md` | PR body skeleton for a bugfix |
+| `references/git/stale-checkout-port.md` | porting a change into a stale checkout / fork |
+
+**How to use them:** when the task reaches PHASE 5 and the detail matters, read
+the matching file — do **not** reconstruct commit formats or PR bodies from
+memory. The templates in particular exist so the PR body is consistent and
+complete on the first try.
+
+### A.5 — Coding journal format
+
+Append to the journal (see PHASE 5.7) one entry per solved problem:
+
+```markdown
+## [YYYY-MM-DD] <short-title>
+
+**Task:** what was asked, in one line.
+**Approach:** what you did, in 2–4 lines.
+**Problems:** what went wrong, and the root cause once found.
+**Lesson:** the reusable insight — the part future-you needs.
+**Files:** the paths touched.
+```
+
+**Append only — never rewrite earlier entries.** The journal is a record, not a draft.
+
+---
+
+## Appendix B — Common failures (each one real)
+
+| Failure | What it looks like | The rule that prevents it |
+|---|---|---|
+| **Symptom fix** | Bug "fixed", returns in a week | § 1.1 Iron Law |
+| **Guessing without a loop** | Multiple fixes, none stick | § 1.2 Feedback Loop |
+| **Self-review blindness** | "I checked it myself" | § 4.12b independent review |
+| **Green tests, broken app** | Suite passes, feature fails | § 4.2 run the real entry point |
+| **Silent phase skip** | Nothing mentioned, a phase absent | § RULES — say why you skipped |
+| **Optimistic report** | "All tests pass" (some skipped) | § 6.1 honest report |
+| **Scope creep** | Diff much bigger than the request | § 3.4 one logical change |
+| **Fake test** | Test passes even with the bug present | § 5.10 sabotage run |
+| **Leaked secret** | Key in a commit, quietly removed | § 4.8 scan + **rotate + tell** |
+| **Force-push a shared branch** | Teammates' work lost | § 5.6 never rewrite shared history |
+| **Conflict marker shipped** | `<<<<<<<` in the file | § 5.12 grep before commit |
+| **Wrong release date** | CHANGELOG date from memory | § 5.5 take the date from the clock |
+| **Un-revertible change** | No branch, no rollback path | § 5.6 undoable by design |
+| **Stale-issue fix** | "Fixed" something already correct | § 5.10 validate the premise |
+
+---
+
+## Appendix C — Tool mapping (non-Hermes runtimes)
+
+Already given in full near the top of this file (**Tool Mapping**). Summary:
+
+- `skills_list()` / `skill_view()` → read your runtime's skills/rules directory,
+  or skip and use this file alone.
+- `codegraph` / call hierarchy → LSP references, IDE call hierarchy, or `grep -rn`.
+- `terminal`, `read_file`, `search_files` → your runtime's shell and file tools.
+- `delegate_task` → your runtime's subagent/Task mechanism; otherwise do it yourself.
+
+**Nothing in this file requires a specific tool.** The discipline is portable.
+
+---
+
+## Appendix D — Complexity scale: sizing the ceremony
+
+**This appendix is where "effective & efficient > minimum" becomes a number.**
+
+Match the *ceremony* to the *change*. Over-ceremonising a one-line fix wastes the
+user's time as surely as under-ceremonising a payment path.
+
+| Scale | Looks like | Required | Skippable (say why) |
+|---|---|---|---|
+| **S1 — Trivial** | 1 file, ≤ 10 lines, no logic change (typo, text, config value) | Read the file · make the change · run the real entry point · honest report | PRA 0.0/0.2 · PHASE 2 · security scan (unless a secret-adjacent file) |
+| **S2 — Small** | 1–2 files, one function, clear behaviour | Full per-function cycle · unit test · honest report | PRA 0.0 · PHASE 2 · 4-lens |
+| **S3 — Moderate** | 2–5 files, several functions, some new behaviour | Full workflow · unit + integration · Impact-Audit Gate · independent review | PRA 0.0 · `load`/`e2e` unless the path is user-visible |
+| **S4 — Large** | > 5 files, new module, cross-cutting change | Full workflow · plan first (§ 0.2b) · independent review · PR · branch | Nothing except PRA 0.0 if the spec exists |
+| **S5 — Risky** | Money, auth, data migration, irreversible, shared/production | **Everything**, no exceptions · spike where uncertainty exists · extra independent review · explicit rollback plan the user agrees to | **Nothing.** State the rollback plan before starting. |
+
+**How to use this table:**
+
+1. **Size the change honestly, before starting.** Say the size out loud to the user.
+2. **Size up, not down, when unsure.** S5 is not "more careful than needed" — it
+   is the correct size for the risk.
+3. **Sizing down requires the user's agreement** when the change touches money,
+   auth, or data.
+4. **Never use "it's small" to skip the security scan or the honest report.** Those
+   are S1-and-up.
+
+> **This is the guard on the whole anti-bloat apparatus.** The ladder (§ 4.10)
+> and the minimum-set thinking in Appendix A exist to stop you **inventing**
+> work — not to make you the author of fragile code. **Effective & efficient
+> means the *right* size, not the *smallest* size.**
+
+---
+
+## Appendix E — Why this file has no dependencies
+
+**v3.0 exists because separate skills contradicted each other.** They were written
+at different times, by different authors, for different purposes, and nothing
+reconciled them. The result was an agent that could follow two opposite
+"mandatory" instructions in the same session.
+
+**Consolidating them is the fix.** One file cannot contradict itself. Every rule
+above has been compared against every other rule in this file, and the
+contradictions were resolved **explicitly** — with the resolution written down:
+
+| Old contradiction | Resolution in v3.0 |
+|---|---|
+| `plan` said "never implement" · workflow said "always implement" | Plan is a **phase** (§ 0.2b), not a competing authority |
+| `spike` said "delete the code" · workflow said "every change undoable" | Spike code is **discarded, never left silently**; the **finding** is the deliverable (§ 0.2a) |
+| `ponytail` said "one line!" · user said "short code is not the goal" | The ladder is a **hint**; **rung 6 has a guard** (§ 4.10) |
+| `requesting-code-review` had an auto-fix loop · workflow said "never verify your own work" | **A reviewer reports; the author fixes** (§ 4.12b) |
+| `testing-strategy` depended on 12 reference files | References **moved into this skill** (§ A.3) — no lost pages |
+
+**If you add to this file, keep that property.** When a new rule disagrees with an
+old one, **do not ship both** — resolve it, write the resolution down, and keep
+this table current.
+
+---
 
 ## License
 
-MIT — see `LICENSE`. Use it, fork it, ship it.
+MIT — © Fandi Iswara Saputra (@fandimetall)

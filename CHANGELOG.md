@@ -5,6 +5,74 @@ All notable changes to this skill are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.0] - 2026-10-01
+
+### BREAKING
+
+- **The coding skills were merged into this one file.** These sixteen skills were
+  absorbed and removed:
+
+  `plan` · `spike` · `systematic-debugging` · `test-driven-development` ·
+  `testing-strategy` · `requesting-code-review` · `simplify-code` · `ponytail`
+  (+`ponytail-review`/`-audit`/`-debt`/`-gain`/`-help`) · `coding-journal` ·
+  `brief-ku` · `agent-skills-addyosmani` · `ecc-agent-harness` ·
+  `github-pr-workflow` · `github-issue-to-pr` · `git-patch-porting` ·
+  `merge-reconciler`
+
+  **Why:** they contradicted each other. Two skills could both say **MUST** and
+  mean opposite things, and seven of them auto-triggered on ordinary words
+  (*commit*, *done*, *simplify*, *minimal*). Installing only some of them broke
+  the rest. **One file cannot contradict itself.**
+
+### Added
+
+- **THE LOCK**, at the top of the file, three rules that override everything:
+  **(1) effective & efficient > minimum — short code is NOT the goal**;
+  (2) one skill, one process; (3) the user's explicit instruction outranks all.
+- **PHASE 1 — root cause, plus the FEEDBACK LOOP RULE** (from
+  `systematic-debugging`): *build a command that can go RED on the user's exact
+  symptom before you read code to theorise. A loop you have never seen fail has
+  proven nothing.* Also the **rule of three** — three failed attempts means stop
+  and report, not guess again.
+- **PHASE 3 — the TDD Iron Law** (from `test-driven-development`), merged with the
+  existing **8-step per-function cycle**.
+- **4.8 — mandatory static security scan** before every commit (5 grep patterns),
+  and the rule that a secret already pushed must be **rotated and reported**, not
+  quietly deleted.
+- **4.10 — the anti-bloat ladder** (from `ponytail`), **with the guard**: rungs
+  1–5 are always right, but *rung 6 is a hint to check, never an instruction to
+  obey* — when the short form is unreadable or fragile, **the longer version is
+  correct**.
+- **4.3 — the Impact-Audit Gate** (6 questions, all must be yes before PHASE 5).
+- **5.10 — issue → PR**, including the **sabotage run**: break the fix on purpose
+  and confirm the regression test **goes red**. A test that stays green under
+  sabotage is not testing the bug.
+- **5.12 — merge conflict resolution** under an **impartiality contract**.
+- **Appendix A — testing catalogue** (12 test types, a decision matrix, and
+  money/critical-invariant properties), **Appendix B — common failures**,
+  **Appendix D — complexity scale S1–S5** (sizing the ceremony to the change),
+  **Appendix E — the contradiction-resolution table**.
+- **`references/` (17 files)** — the testing catalogue's detail pages, the
+  conventional-commits guide, CI troubleshooting, PR body templates, and the
+  stale-checkout porting procedure. **Moved in, not left behind.**
+
+### Fixed
+
+- **`plan` vs the workflow.** `plan` said *do not implement code*; the workflow
+  said *always implement*. Plan is now a **phase (0.2b)**, not a competing authority.
+- **`spike` vs reversibility.** `spike` said *delete the code*; the workflow said
+  *every change must be undoable*. Spike output is now **knowledge**, and the code
+  is **discarded, never left silently** in the repo.
+- **`ponytail` vs the user's focus.** `ponytail` said *one line!*; the user said
+  *short code is not the goal*. Resolved by the guard in 4.10.
+- **`requesting-code-review`'s auto-fix loop vs "never verify your own work".**
+  The reviewer **reports**; the author **fixes**. Auto-fix is forbidden — it makes
+  the reviewer the author.
+- **`testing-strategy`'s 12 reference files** would have been orphaned by the
+  merge. They were **moved into this skill** and every pointer verified.
+
+---
+
 ## [2.6.0] - 2026-10-01
 
 ### Added
