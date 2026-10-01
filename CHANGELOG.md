@@ -5,6 +5,41 @@ All notable changes to this skill are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.0.2] - 2026-10-01
+
+### Added — the 5 missing `ponytail` children
+
+v3.0.0 claimed to absorb 16 skills but **4 of the 5 `ponytail` child skills were
+not actually carried over.** Found while verifying a backup, not while writing.
+This release closes that gap.
+
+- **§ 4.10a — One-line findings** (from `ponytail-review`, `ponytail-audit`).
+  `L<line>: <tag> <what to cut>. <replacement>.` with tags
+  `delete:` / `stdlib:` / `native:` / `yagni:` / `shrink:`. Diff scope *and*
+  repo scope (ranked, biggest cut first). Ends with `net: -<N> lines`.
+  Nothing to cut → `Lean already. Ship.` and stop. Never manufacture a finding.
+- **§ 4.10b — The debt ledger** (from `ponytail-debt`). Deliberate shortcuts get a
+  `ponytail: <ceiling>, <trigger to revisit>` marker; harvest with grep into a
+  ledger; markers with no trigger get flagged `no-trigger` because *those are the
+  ones that silently rot.* Rule: **a deferral must not quietly become permanent.**
+- **§ 4.10c — There are no "levels", and no savings target.**
+  `ponytail-help`'s mode dial (`lite`/`full`/`ultra`) is **rejected on the record**:
+  `ultra` ("challenges requirements before building") contradicts THE LOCK.
+  `ponytail-gain`'s benchmark medians are **not** kept as a goal — only its
+  honesty is: *never claim a saving you did not measure.*
+
+Appendix E updated so both rejections are written down rather than silently dropped.
+
+### Fixed
+
+- Corrected a false completion claim: "16 skills absorbed" was 16 at v3.0.0 **minus
+  4 uncarried `ponytail` children** — now actually complete.
+
+### Note
+
+This file's own § 6.1b was violated three times *while building it* (bytes reported
+as characters). The rule stands, and the mistakes were found by verifying a backup
+rather than trusting a green checkmark — which is the rule working.
 ## [3.0.1] - 2026-10-01
 
 ### Added

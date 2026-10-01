@@ -654,6 +654,89 @@ into § 4.10 or the report; they do not silently expand the diff.
 > guard in every caller — and patching only the path the ticket names leaves
 > every sibling caller still broken. **Fix it once, where all callers route through.**
 
+#### 4.10a — One-line findings (absorbed from `ponytail-review` / `ponytail-audit`)
+
+Write over-engineering findings as **one line**, never a paragraph:
+
+```
+L<line>: <tag> <what to cut>. <what replaces it>.
+```
+
+| Tag | Meaning |
+|---|---|
+| `delete:` | dead code, unused flexibility, speculative feature. Replacement: nothing. |
+| `stdlib:` | hand-rolled code the standard library already ships. **Name the function.** |
+| `native:` | a dependency doing what the platform already does. Name the feature. |
+| `yagni:` | abstraction with one implementation, config nobody sets, layer with one caller. |
+| `shrink:` | same logic, fewer lines. Show the shorter form. |
+
+❌ *"This EmailValidator class might be more complex than necessary, have you
+considered whether all these validation rules are needed?"*
+
+✅ `L12-38: stdlib: 27-line validator class. "@" in email, 1 line, real validation is the confirmation mail.`
+
+**Two scopes.** *Diff scope* reviews the change at hand. *Repo scope* (`audit`)
+scans the whole tree and **ranks findings, biggest cut first**.
+
+End with the measured total: `net: -<N> lines, -<M> deps possible.` If there is
+nothing to cut: **`Lean already. Ship.`** — and stop. **Never manufacture a finding
+to look useful.**
+
+**Boundaries:** over-engineering and complexity only. **Correctness bugs, security
+holes and performance are out of scope** — those belong to § 4.1 (tests) and § 4.8
+(security scan). These passes **list findings; they apply nothing.** The author
+applies (§ 4.12b).
+
+#### 4.10b — The debt ledger (absorbed from `ponytail-debt`)
+
+> **A deferral must not quietly become permanent.**
+
+When you take a deliberate shortcut, mark it **in the code**, naming both its
+ceiling and its upgrade path:
+
+```
+# ponytail: caps at 50 rows, switch to a real queue above that
+```
+
+The convention is `ponytail: <the limit>, <the trigger to revisit>`.
+
+Harvest them into a ledger — never silently:
+
+```bash
+grep -rnE '(#|//) ?ponytail:' . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=dist
+```
+
+One row per marker, grouped by file:
+
+`<file>:<line>, <what was simplified>. ceiling: <limit>. upgrade: <trigger>.`
+
+**Flag the rot risk.** A marker naming **no upgrade path or trigger** gets a
+`no-trigger` tag — **those are the ones that silently rot.** End with
+`<N> markers, <M> with no trigger.` Nothing found: `No ponytail: debt. Clean ledger.`
+
+**Where this sits:** the coding journal (§ 6.3) records *what you did*; the debt
+ledger records *what you knowingly left undone*. Both exist so a decision cannot
+quietly disappear. **Report-only by default** — it writes a file only when asked.
+
+#### 4.10c — There are no "levels", and no savings target
+
+The former `ponytail` skill shipped mode switches (`lite` / `full` / `ultra`) and
+a benchmark scoreboard. **They are not absorbed, and must not come back.**
+
+- **`ultra`** was defined as *"YAGNI extremist. Deletion before addition.
+  Challenges requirements before building."* That **directly contradicts THE LOCK
+  at the top of this file**, which states that changing the requirement in order
+  to avoid work is not the job. A dial that lets the agent choose *how lazy to be*
+  is the exact knob that produced the contradictions this file exists to end.
+  **One posture, always:** understand the problem fully, then take the smallest
+  change **that stays readable, testable and maintainable**.
+- **Measured impact is not a work target.** `ponytail-gain` published benchmark
+  medians (lines, cost, speed) and — credit where due — **refused to print
+  per-repo savings**, because *the unbuilt version was never written, so there is
+  no real baseline to subtract from.* That honesty is kept here as a rule:
+  **never claim a saving you did not measure in this session** (§ 6.1b). The
+  published figures were never a goal to hit.
+
 ### 4.12b — Independent review (never verify your own work)
 
 > **Core principle: no agent should verify its own work. Fresh context finds what you miss.**
@@ -1213,6 +1296,8 @@ contradictions were resolved **explicitly** — with the resolution written down
 | `ponytail` said "one line!" · user said "short code is not the goal" | The ladder is a **hint**; **rung 6 has a guard** (§ 4.10) |
 | `requesting-code-review` had an auto-fix loop · workflow said "never verify your own work" | **A reviewer reports; the author fixes** (§ 4.12b) |
 | `testing-strategy` depended on 12 reference files | References **moved into this skill** (§ A.3) — no lost pages |
+| `ponytail` shipped 5 child skills (`review`/`audit`/`debt`/`gain`/`help`) | 4 **absorbed** (§ 4.10a, 4.10b) · `help`'s **mode dial rejected** — `ultra` contradicted THE LOCK (§ 4.10c) |
+| `ponytail-gain` published benchmark medians as if they were a target | Kept only as **"never claim an unmeasured saving"** (§ 4.10c, § 6.1b) |
 
 **If you add to this file, keep that property.** When a new rule disagrees with an
 old one, **do not ship both** — resolve it, write the resolution down, and keep
